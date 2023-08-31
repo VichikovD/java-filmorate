@@ -11,6 +11,10 @@ hs_err_pid*
 out/
 HELP.md
 target/
+mvnw
+mvnw.cmd
+checkstyle.xml
+.mvn
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
