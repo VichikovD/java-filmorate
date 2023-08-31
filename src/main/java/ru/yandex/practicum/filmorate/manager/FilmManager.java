@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.ValidateFilmException;
-import ru.yandex.practicum.filmorate.exception.ValidateUserException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -59,6 +58,7 @@ public class FilmManager {
             throw new ValidateFilmException(exceptionMessage);
         }
     }
+
     private void handleValidateErrors(BindingResult bindingResult) throws ValidateFilmException {
         if (bindingResult.hasErrors()) {
             List<String> errorsList = new ArrayList<>();
