@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.manager;
+package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
@@ -6,39 +6,41 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import ru.yandex.practicum.filmorate.exception.ValidateUserException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Slf4j
-public class UserManager {
-    HashMap<Integer, User> users;
+public class UserStorage {
+    Integer idCounter = 0;
+    LinkedHashMap<Integer, User> users;
 
-    public UserManager() {
-        users = new HashMap<>();
+    public UserStorage() {
+        users = new LinkedHashMap<>();
+    }
+
+    private int getNewId() {
+        return ++idCounter;
     }
 
     @PostMapping
-    public User createUser(User user, BindingResult bindingResult) throws ValidateUserException {
-        handleValidateErrors(bindingResult);
+    public User createUser(User user) {
         validateUserName(user);
-        int newId = users.size() + 1;
+        int newId = getNewId();
         user.setId(newId);
         users.put(newId, user);
         return user;
     }
 
     @PutMapping
-    public User updateUser(@Valid User thatUser, BindingResult bindingResult) throws ValidateUserException {
-        handleValidateErrors(bindingResult);
-        validateUserName(thatUser);
+    public User updateUser(User thatUser) {
         User thisUser = users.get(thatUser.getId());
         if (thisUser == null) {
-            throw new ValidateUserException("User not found by ID: " + thatUser.getId());
+            throw new NotFoundException("User not found by ID: " + thatUser.getId());
         }
         users.put(thatUser.getId(), thatUser);
         return thatUser;
@@ -49,7 +51,7 @@ public class UserManager {
         return new ArrayList<>(users.values());
     }
 
-    private void validateUserName(User user) throws ValidateUserException {
+    private void validateUserName(User user) {
         String name = user.getName();
         if (name == null || name.isEmpty()) {
             user.setName(user.getLogin());
@@ -57,7 +59,7 @@ public class UserManager {
         }
     }
 
-    private void handleValidateErrors(BindingResult bindingResult) throws ValidateUserException {
+    private void handleValidateErrors(BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<String> errorsList = new ArrayList<>();
             for (ObjectError error : bindingResult.getAllErrors()) {
@@ -65,7 +67,7 @@ public class UserManager {
                 log.debug(errorMessage);
                 errorsList.add(errorMessage);
             }
-            throw new ValidateUserException(String.join(", ", errorsList));
+            throw new ValidateException(String.join(", ", errorsList));
         }
     }
 }

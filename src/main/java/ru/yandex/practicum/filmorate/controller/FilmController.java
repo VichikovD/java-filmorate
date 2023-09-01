@@ -1,11 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidateFilmException;
-import ru.yandex.practicum.filmorate.manager.FilmManager;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -14,24 +12,24 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    FilmManager filmManager = new FilmManager();
+    FilmStorage filmStorage = new FilmStorage();
 
     @PostMapping
-    public Film createFilm(@RequestBody @Valid Film film, BindingResult bindingResult) throws ValidateFilmException {
-        Film filmToReturn = filmManager.createFilm(film, bindingResult);
+    public Film createFilm(@RequestBody @Valid Film film) {
+        Film filmToReturn = filmStorage.createFilm(film);
         log.debug(filmToReturn.toString());
         return filmToReturn;
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody @Valid Film film, BindingResult bindingResult) throws ValidateFilmException {
-        Film filmToReturn = filmManager.updateFilm(film, bindingResult);
+    public Film updateFilm(@RequestBody @Valid Film film) {
+        Film filmToReturn = filmStorage.updateFilm(film);
         log.debug(filmToReturn.toString());
         return filmToReturn;
     }
 
     @GetMapping
     public List<Film> getAllFilms() {
-        return filmManager.getAllFilms();
+        return filmStorage.getAllFilms();
     }
 }

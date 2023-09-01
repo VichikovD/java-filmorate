@@ -14,13 +14,13 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 public class User {
-    int id;
+    Integer id;
 
-    @NotBlank(message = "Email should not be Blank")
+    @NotBlank(message = "Email should not be null or empty")
     @Email(message = "Email should be valid")
     String email;
 
-    @NotBlank(message = "Login should not be Blank")
+    @NotBlank(message = "Login should not be null or empty")
     String login;
 
     String name;
