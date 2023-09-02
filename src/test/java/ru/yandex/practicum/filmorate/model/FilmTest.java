@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.ConstraintViolation;
@@ -9,18 +10,27 @@ import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FilmTest {
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    Validator validator = factory.getValidator();
+    static Validator validator;
+
+    @BeforeAll
+    static void beforeAll() {
+        validator = getValidator();
+    }
+
+    static Validator getValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        return factory.getValidator();
+    }
 
 
     @Test
     void validFilm() {
         Set<ConstraintViolation<Film>> violations = validator.validate(getStandardFilm());
-        assertTrue(violations.isEmpty());
+        assertTrue(violations.isEmpty(), "Film validated with some ConstraintViolations when supposed not to");
     }
 
     @Test
@@ -30,7 +40,9 @@ class FilmTest {
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        assertFalse(violations.isEmpty());
+        assertDoesNotThrow(() -> violations.stream().filter(cViolation -> cViolation.getMessage()
+                        .equals("Film name can't be null or empty")).findFirst().get(),
+                "violations doesn't contains Film name ConstraintViolation");
     }
 
     @Test
@@ -42,7 +54,9 @@ class FilmTest {
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        assertFalse(violations.isEmpty());
+        assertDoesNotThrow(() -> violations.stream().filter(cViolation -> cViolation.getMessage()
+                        .equals("Film description can't have more then 200 symbols")).findFirst().get(),
+                "violations doesn't contains Film description length ConstraintViolation");
     }
 
     @Test
@@ -52,7 +66,9 @@ class FilmTest {
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        assertFalse(violations.isEmpty());
+        assertDoesNotThrow(() -> violations.stream().filter(cViolation -> cViolation.getMessage()
+                        .equals("Release date can't be earlier then the 28th of December 1895")).findFirst().get(),
+                "violations doesn't contains Film releaseDate ConstraintViolation");
     }
 
     @Test
@@ -62,7 +78,9 @@ class FilmTest {
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        assertFalse(violations.isEmpty());
+        assertDoesNotThrow(() -> violations.stream().filter(cViolation -> cViolation.getMessage()
+                        .equals("Film duration should be positive figure")).findFirst().get(),
+                "violations doesn't contains Film duration ConstraintViolation");
     }
 
     private Film getStandardFilm() {

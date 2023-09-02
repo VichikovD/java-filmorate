@@ -13,7 +13,7 @@ import java.util.List;
 
 @Slf4j
 public class FilmStorage {
-    Integer idCounter = 0;
+    int counterId = 0;
     LinkedHashMap<Integer, Film> films;
 
     public FilmStorage() {
@@ -21,7 +21,7 @@ public class FilmStorage {
     }
 
     private int getNewId() {
-        return ++idCounter;
+        return ++counterId;
     }
 
     @PostMapping

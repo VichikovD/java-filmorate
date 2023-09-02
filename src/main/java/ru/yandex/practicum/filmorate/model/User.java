@@ -25,7 +25,7 @@ public class User {
 
     String name;
 
-    @Past
+    @Past(message = "Birthday should be in past")
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
     LocalDate birthday;
 }
