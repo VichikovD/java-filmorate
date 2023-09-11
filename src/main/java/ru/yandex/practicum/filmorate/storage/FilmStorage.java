@@ -13,8 +13,8 @@ import java.util.List;
 
 @Slf4j
 public class FilmStorage {
-    int counterId = 0;
-    LinkedHashMap<Integer, Film> films;
+    private int counterId = 0;
+    private LinkedHashMap<Integer, Film> films;
 
     public FilmStorage() {
         films = new LinkedHashMap<>();

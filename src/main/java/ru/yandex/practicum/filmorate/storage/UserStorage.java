@@ -13,8 +13,8 @@ import java.util.List;
 
 @Slf4j
 public class UserStorage {
-    int counterId = 0;
-    LinkedHashMap<Integer, User> users;
+    private int counterId = 0;
+    private LinkedHashMap<Integer, User> users;
 
     public UserStorage() {
         users = new LinkedHashMap<>();
