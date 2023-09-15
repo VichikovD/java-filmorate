@@ -1,49 +1,18 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
-@Slf4j
-public class FilmStorage {
-    private int counterId = 0;
-    private LinkedHashMap<Integer, Film> films;
+public interface FilmStorage {
+    public Film createFilm(Film film);
 
-    public FilmStorage() {
-        films = new LinkedHashMap<>();
-    }
+    public Film updateFilm(Film thatFilm);
 
-    private int getNewId() {
-        return ++counterId;
-    }
+    public List<Film> getAllFilms();
 
-    @PostMapping
-    public Film createFilm(Film film) {
-        int newId = getNewId();
-        film.setId(newId);
-        films.put(newId, film);
-        return film;
-    }
+    public Optional<Film> getOptionalFilmById(Integer id);
 
-    @PutMapping
-    public Film updateFilm(Film thatFilm) {
-        Film thisFilm = films.get(thatFilm.getId());
-        if (thisFilm == null) {
-            throw new NotFoundException("Film not found by ID: " + thatFilm.getId());
-        }
-        films.put(thatFilm.getId(), thatFilm);
-        return thatFilm;
-    }
-
-    @GetMapping
-    public List<Film> getAllFilms() {
-        return new ArrayList<>(films.values());
-    }
+    public Film getFilmById(Integer id);
 }
