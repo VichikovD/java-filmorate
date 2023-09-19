@@ -10,26 +10,12 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.HashSet;
 
 @Data
 @Builder
 @AllArgsConstructor
 public class Film {
-    public static Comparator<Film> filmComparatorByLikes = new Comparator<Film>() {
-        @Override
-        public int compare(Film o1, Film o2) {
-            return o2.getLikesQuantity().compareTo(o1.getLikesQuantity());
-        }
-    };
-
     Integer id;
-    HashSet<Integer> likes;
-
-    public Film() {
-        this.likes = new HashSet<>();
-    }
 
     @NotBlank(message = "Film name can't be null or empty")
     String name;
@@ -44,17 +30,4 @@ public class Film {
 
     @Min(value = 0, message = "Film duration should be positive figure")
     int duration;
-
-    public Integer getLikesQuantity() {
-        return likes.size();
-    }
-
-    public void addLike(Integer id) {
-        likes.add(id);
-    }
-
-    public void deleteLike(Integer id) {
-        likes.remove(id);
-    }
-
 }

@@ -2,22 +2,51 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
     private Integer counterId = 0;
     private LinkedHashMap<Integer, User> users;
+    private HashMap<Integer, HashSet<Integer>> friends;
+    private HashMap<Integer, HashSet<Integer>> likedFilms;
 
     public InMemoryUserStorage() {
-        users = new LinkedHashMap<>();
+        this.users = new LinkedHashMap<>();
+        this.friends = new HashMap<>();
+        this.likedFilms = new HashMap<>();
+    }
+
+    public void addFriend(Integer userId1, Integer userId2) {
+        friends.get(userId1).add(userId2);
+    }
+
+    public void deleteFriend(Integer userId1, Integer userId2) {
+        friends.get(userId1).remove(userId2);
+    }
+
+    public void addLikedFilm(Integer userId, Integer filmId) {
+        likedFilms.get(userId).add(filmId);
+    }
+
+    public void deleteLikedFilm(Integer userId, Integer filmId) {
+        likedFilms.get(userId).remove(filmId);
+    }
+
+    public List<Integer> getFriendsIdListById(Integer id) {
+        return new ArrayList<>(friends.get(id));
+    }
+
+    public List<User> getFriendsUsersListById(Integer id) {
+        List<Integer> friendIdList = getFriendsIdListById(id);
+        List<User> friendUsersList = new ArrayList<>();
+        for (Integer friendId : friendIdList) {
+            friendUsersList.add(users.get(friendId));
+        }
+        return friendUsersList;
     }
 
     private Integer getNewId() {
@@ -26,40 +55,24 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User createUser(User user) {
-        validateUserName(user);
         Integer newId = getNewId();
         user.setId(newId);
         users.put(newId, user);
+        friends.put(newId, new HashSet<>());
+        likedFilms.put(newId, new HashSet<>());
         return user;
     }
 
     @Override
-    public User updateUser(User thatUser) {
-        User thisUser = users.get(thatUser.getId());
-        if (thisUser == null) {
-            throw new NotFoundException("User not found by ID: " + thatUser.getId());
-        }
-        users.put(thatUser.getId(), thatUser);
-        return thatUser;
+    public void updateUser(User user) {
+        users.put(user.getId(), user);
     }
 
     public List<User> getAllUsers() {
         return new ArrayList<>(users.values());
     }
 
-    public Optional<User> getOptionalUserById(Integer id) {
+    public Optional<User> getUserById(Integer id) {
         return Optional.ofNullable(users.get(id));
-    }
-
-    public User getUserById(Integer id) {
-        return users.get(id);
-    }
-
-    private void validateUserName(User user) {
-        String name = user.getName();
-        if (name == null || name.isEmpty()) {
-            user.setName(user.getLogin());
-            log.debug("User name is blank, therefore, it's replaced with Login");
-        }
     }
 }

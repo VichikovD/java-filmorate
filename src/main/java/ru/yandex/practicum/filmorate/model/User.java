@@ -9,19 +9,14 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
-import java.util.HashSet;
 
 @Data
 @Builder
 @AllArgsConstructor
 public class User {
     Integer id;
-    HashSet<Integer> friends;
-    HashSet<Integer> likedFilms;
 
     public User() {
-        this.friends = new HashSet<>();
-        this.likedFilms = new HashSet<>();
     }
 
     @NotBlank(message = "Email should not be null or empty")
@@ -37,19 +32,11 @@ public class User {
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
     LocalDate birthday;
 
-    public void addFriend(Integer id) {
-        friends.add(id);
+    public boolean isEmptyName() {
+        return name == null || name.isEmpty();
     }
 
-    public void deleteFriend(Integer id) {
-        friends.remove(id);
-    }
-
-    public void addLikedFilm(Integer id) {
-        likedFilms.add(id);
-    }
-
-    public void deleteLikedFilm(Integer id) {
-        likedFilms.remove(id);
+    public void setLoginAsName() {
+        name = login;
     }
 }

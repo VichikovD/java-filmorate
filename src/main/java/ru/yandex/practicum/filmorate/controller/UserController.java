@@ -3,13 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.InvalidIdException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -37,53 +35,44 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Optional<String> id) {
-        Integer idInt = getIdByOptionalString(id);
-        return userService.getUserById(idInt);
+    public User getUserById(@PathVariable int id) {
+        User userToReturn = userService.getUserById(id);
+        log.debug(userToReturn.toString());
+        return userToReturn;
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable Optional<String> id,
-                          @PathVariable Optional<String> friendId) {
-        Integer idInt = getIdByOptionalString(id);
-        Integer friendIdInt = getIdByOptionalString(friendId);
-        userService.addFriend(idInt, friendIdInt);
+    public void addFriend(@PathVariable int id,
+                          @PathVariable int friendId) {
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable Optional<String> id,
-                             @PathVariable Optional<String> friendId) {
-        Integer idInt = getIdByOptionalString(id);
-        Integer friendIdInt = getIdByOptionalString(friendId);
-        userService.deleteFriend(idInt, friendIdInt);
+    public void deleteFriend(@PathVariable int id,
+                             @PathVariable int friendId) {
+        userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getUserFriends(@PathVariable Optional<String> id) {
-        Integer idInt = getIdByOptionalString(id);
-        return userService.getFriendsByUserId(idInt);
+    public List<User> getUserFriends(@PathVariable int id) {
+        List<User> usersList = userService.getFriendsByUserId(id);
+        log.debug(usersList.toString());
+        return usersList;
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getUserCommonFriends(@PathVariable Optional<String> id,
-                                           @PathVariable Optional<String> otherId) {
-        Integer idInt = getIdByOptionalString(id);
-        Integer otherIdInt = getIdByOptionalString(otherId);
-
-        return userService.getUserCommonFriends(idInt, otherIdInt);
+    public List<User> getUserCommonFriends(@PathVariable int id,
+                                           @PathVariable int otherId) {
+        List<User> usersList = userService.getUserCommonFriends(id, otherId);
+        log.debug(usersList.toString());
+        return usersList;
     }
 
     @GetMapping
     public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
+        List<User> usersList = userService.getAllUsers();
+        log.debug(usersList.toString());
+        return usersList;
 
-    private Integer getIdByOptionalString(Optional<String> optString) {
-        String idString = optString.orElseThrow(() -> new InvalidIdException("Not identified Id: " + optString));
-        try {
-            return Integer.parseInt(idString);
-        } catch (NumberFormatException e) {
-            throw new InvalidIdException(String.format("Invalid Id: %s.", idString));
-        }
     }
 }
