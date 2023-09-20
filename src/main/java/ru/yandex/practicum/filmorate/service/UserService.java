@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -20,50 +21,67 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        validateService.validateUserName(user);
+        if (user.isEmptyName()) {
+            user.setLoginAsName();
+        }
         return userStorage.createUser(user);
     }
 
     public User updateUser(User user) {
-        validateService.userExistsByIdValidation(user.getId());
-        validateService.validateUserName(user);
+        validateService.validateUserId(user);
+        int userId = user.getId();
+        userStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        if (user.isEmptyName()) {
+            user.setLoginAsName();
+        }
         userStorage.updateUser(user);
         return user;
     }
 
-    public User getUserById(Integer id) {
-        validateService.userExistsByIdValidation(id);
-        return userStorage.getUserById(id)
-                .get();
+    public User getUserById(int userId) {
+        return userStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
     }
 
-    public void addFriend(Integer friendId1, Integer friendId2) {
-        validateService.userExistsByIdValidation(friendId1);
-        validateService.userExistsByIdValidation(friendId2);
-
-        userStorage.addFriend(friendId1, friendId2);
-        userStorage.addFriend(friendId2, friendId1);
+    public List<User> getAllUsers() {
+        return userStorage.getAllUsers();
     }
 
-    public void deleteFriend(Integer friendId1, Integer friendId2) {
-        validateService.userExistsByIdValidation(friendId1);
-        validateService.userExistsByIdValidation(friendId2);
+    public void addFriend(int userId, int friendId) {
+        User user = userStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        User friend = userStorage.getUserById(friendId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
 
-        userStorage.deleteFriend(friendId1, friendId2);
-        userStorage.deleteFriend(friendId2, friendId1);
+        userStorage.addFriend(user, friend);
+        userStorage.addFriend(friend, user);
     }
 
-    public List<User> getFriendsByUserId(Integer id) {
-        validateService.userExistsByIdValidation(id);
-        return userStorage.getFriendsUsersListById(id);
+    public void deleteFriend(int userId, int friendId) {
+        User user = userStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        User friend = userStorage.getUserById(friendId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
+
+        userStorage.deleteFriend(user, friend);
+        userStorage.deleteFriend(friend, user);
     }
 
-    public List<User> getUserCommonFriends(Integer id, Integer otherId) {
-        validateService.userExistsByIdValidation(id);
-        validateService.userExistsByIdValidation(otherId);
+    public List<User> getFriendsByUserId(int userId) {
+        userStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        return userStorage.getFriendsUsersListById(userId);
+    }
 
-        List<Integer> mainFriendIdList = userStorage.getFriendsIdListById(id);
-        List<Integer> otherFriendIdList = userStorage.getFriendsIdListById(otherId);
+    public List<User> getUserCommonFriends(int userId, int otherUserId) {
+        userStorage.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        userStorage.getUserById(otherUserId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + otherUserId));
+
+        List<Integer> mainFriendIdList = userStorage.getFriendsIdListById(userId);
+        List<Integer> otherFriendIdList = userStorage.getFriendsIdListById(otherUserId);
         List<User> commonUsersList = new ArrayList<>();
 
         for (Integer otherFriendId : otherFriendIdList) {
@@ -74,9 +92,5 @@ public class UserService {
             }
         }
         return commonUsersList;
-    }
-
-    public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
     }
 }

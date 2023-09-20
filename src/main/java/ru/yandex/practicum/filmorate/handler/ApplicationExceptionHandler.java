@@ -25,10 +25,10 @@ public class ApplicationExceptionHandler {
     public Map<String, String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         HashMap<String, String> errorMap = new HashMap<>();
         for (FieldError error : e.getFieldErrors()) {
-            String fieledName = error.getField();
+            String fieldName = error.getField();
             String errorMessage = error.getDefaultMessage();
-            errorMap.put(fieledName, errorMessage);
-            getLogged(fieledName, errorMessage);
+            errorMap.put(fieldName, errorMessage);
+            log.debug("{} = {}", fieldName, errorMessage);
         }
         return errorMap;
     }
@@ -37,7 +37,7 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleInvalidIdException(InvalidIdException e) {
         String errorMessage = e.getMessage();
-        getLogged("ID Exception", errorMessage);
+        log.debug("{} = {}", "ID Exception", errorMessage);
         return new ErrorResponse("ID Exception", e.getMessage());
     }
 
@@ -45,7 +45,7 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(NotFoundException e) {
         String errorMessage = e.getMessage();
-        getLogged("Not Found Exception", errorMessage);
+        log.debug("{} = {}", "Not Found Exception", errorMessage);
         return new ErrorResponse("Not Found Exception", e.getMessage());
     }
 
@@ -53,7 +53,7 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConstraintViolationException(ConstraintViolationException e) {
         String errorMessage = e.getMessage();
-        getLogged("Not valid request", errorMessage);
+        log.debug("{} = {}", "Not valid request", errorMessage);
         return new ErrorResponse("Not valid request", getFieldName(errorMessage));
     }
 
@@ -61,7 +61,7 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         String errorMessage = e.getMessage();
-        getLogged("Invalid parameter: " + e.getName(), errorMessage);
+        log.debug("{} = {}", "Invalid parameter: " + e.getName(), errorMessage);
         return new ErrorResponse("Not valid request",
                 String.format("Please check if parameter - %s is correct", e.getName().toUpperCase()));
     }
@@ -71,19 +71,11 @@ public class ApplicationExceptionHandler {
     public ErrorResponse handleUndefinedException(Exception e) {
         String errorMessage = e.getMessage();
         String stackTrace = Arrays.toString(e.getStackTrace());
-        getLogged("Exception", errorMessage, stackTrace);
+        log.debug("{} = {}", "Exception", errorMessage, e);
         return new ErrorResponse(e.toString(), errorMessage, stackTrace);
     }
 
     private String getFieldName(String string) {
         return string.split("\\.")[1];
-    }
-
-    private void getLogged(String name, String message) {
-        log.debug("{} = {}", name, message);
-    }
-
-    private void getLogged(String name, String message, String stackTrace) {
-        log.debug("{} = {} \nStackTrace: {}", name, message, stackTrace);
     }
 }

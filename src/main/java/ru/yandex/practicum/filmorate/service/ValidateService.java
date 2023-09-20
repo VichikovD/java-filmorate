@@ -3,38 +3,26 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.InvalidIdException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 @Service
 @Slf4j
 public class ValidateService {
-    UserStorage userStorage;
-    FilmStorage filmStorage;
-
     @Autowired
-    public ValidateService(UserStorage userStorage, FilmStorage filmStorage) {
-        this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
+    public ValidateService() {
     }
 
-    public void filmExistsByIdValidation(int filmId) {
-        filmStorage.getFilmById(filmId)
-                .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
+    public void validateFilmId(Film film) {
+        if (film.getId() == null) {
+            throw new InvalidIdException("Id should not be empty");
+        }
     }
 
-    public void userExistsByIdValidation(int userId) {
-        userStorage.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-    }
-
-
-    public void validateUserName(User user) {
-        if (user.isEmptyName()) {
-            user.setLoginAsName();
-            log.debug("User name is blank, therefore, it's replaced with Login");
+    public void validateUserId(User user) {
+        if (user.getId() == null) {
+            throw new InvalidIdException("Id should not be empty");
         }
     }
 }

@@ -30,4 +30,14 @@ public class Film {
 
     @Min(value = 0, message = "Film duration should be positive figure")
     int duration;
+
+    int likesQuantity;
+
+    public void addLike() {
+        likesQuantity++;
+    }
+
+    public void deleteLike() {
+        likesQuantity--;
+    }
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Comparator<Film> filmComparatorByLikes = new Comparator<Film>() {
         @Override
         public int compare(Film o1, Film o2) {
-            return getLikesQuantity(o2.getId()).compareTo(getLikesQuantity(o1.getId()));
+            return o2.getLikesQuantity() - o1.getLikesQuantity();
         }
     };
 
@@ -40,14 +41,14 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .size();
     }
 
-    public void addLike(Integer filmId, Integer userId) {
-        likes.get(filmId)
-                .add(userId);
+    public void addLike(Film film, User user) {
+        likes.get(film.getId())
+                .add(user.getId());
     }
 
-    public void deleteLike(Integer filmId, Integer userId) {
-        likes.get(filmId)
-                .remove(userId);
+    public void deleteLike(Film film, User user) {
+        likes.get(film.getId())
+                .remove(user.getId());
     }
 
     private Integer getNewId() {

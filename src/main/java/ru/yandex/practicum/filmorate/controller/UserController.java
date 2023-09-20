@@ -22,6 +22,7 @@ public class UserController {
 
     @PostMapping
     public User createUser(@RequestBody @Valid User user) {
+        log.info("POST {}, body={}", "\"/users\"", user);
         User userToReturn = userService.createUser(user);
         log.debug(userToReturn.toString());
         return userToReturn;
@@ -29,6 +30,7 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@RequestBody @Valid User user) {
+        log.info("PUT {}, body={}", "\"/users\"", user);
         User userToReturn = userService.updateUser(user);
         log.debug(userToReturn.toString());
         return userToReturn;
@@ -36,25 +38,37 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
+        log.info("GET {}", "\"/users/" + id + "\"");
         User userToReturn = userService.getUserById(id);
         log.debug(userToReturn.toString());
         return userToReturn;
     }
 
+    @GetMapping
+    public List<User> getAllUsers() {
+        log.info("GET {}", "\"/users\"");
+        List<User> usersList = userService.getAllUsers();
+        log.debug(usersList.toString());
+        return usersList;
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable int id,
                           @PathVariable int friendId) {
+        log.info("PUT {}", "\"/users/" + id + "/friends/" + friendId + "\"");
         userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable int id,
                              @PathVariable int friendId) {
+        log.info("DELETE {}", "\"/users/" + id + "/friends/" + friendId + "\"");
         userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
     public List<User> getUserFriends(@PathVariable int id) {
+        log.info("GET {}", "\"/users/" + id + "/friends/\"");
         List<User> usersList = userService.getFriendsByUserId(id);
         log.debug(usersList.toString());
         return usersList;
@@ -63,16 +77,9 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getUserCommonFriends(@PathVariable int id,
                                            @PathVariable int otherId) {
+        log.info("GET {}", "\"/users/" + id + "/friends/common/" + otherId + "\"");
         List<User> usersList = userService.getUserCommonFriends(id, otherId);
         log.debug(usersList.toString());
         return usersList;
-    }
-
-    @GetMapping
-    public List<User> getAllUsers() {
-        List<User> usersList = userService.getAllUsers();
-        log.debug(usersList.toString());
-        return usersList;
-
     }
 }

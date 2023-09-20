@@ -12,17 +12,13 @@ public interface UserStorage {
 
     public List<User> getAllUsers();
 
-    public Optional<User> getUserById(Integer id);
+    public Optional<User> getUserById(int id);
 
-    public void addFriend(Integer userId1, Integer userId2);
+    public void addFriend(User userId1, User userId2);
 
-    public void deleteFriend(Integer userId1, Integer userId2);
+    public void deleteFriend(User userId1, User userId2);
 
-    public List<Integer> getFriendsIdListById(Integer id);
+    public List<Integer> getFriendsIdListById(int id);
 
-    public List<User> getFriendsUsersListById(Integer id);
-
-    public void addLikedFilm(Integer userId, Integer filmId);
-
-    public void deleteLikedFilm(Integer userId, Integer filmId);
+    public List<User> getFriendsUsersListById(int id);
 }
