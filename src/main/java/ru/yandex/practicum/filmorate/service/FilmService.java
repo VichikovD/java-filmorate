@@ -31,11 +31,9 @@ public class FilmService {
     public Film updateFilm(Film film) {
         validateService.validateFilmId(film);
         int filmId = film.getId();
-        Film filmToUpdate = filmStorage.getFilmById(filmId)
+        filmStorage.getFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
-        film.setLikesQuantity(filmToUpdate.getLikesQuantity());
-        filmStorage.updateFilm(film);
-        return film;
+        return filmStorage.updateFilm(film);
     }
 
     public Film getFilmById(int filmId) {
@@ -53,7 +51,6 @@ public class FilmService {
         User user = userStorage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
 
-        film.addLike();
         filmStorage.addLike(film, user);
     }
 
@@ -63,7 +60,6 @@ public class FilmService {
         User user = userStorage.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
 
-        film.deleteLike();
         filmStorage.deleteLike(film, user);
     }
 

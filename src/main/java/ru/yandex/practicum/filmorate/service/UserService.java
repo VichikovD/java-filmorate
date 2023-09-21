@@ -80,15 +80,13 @@ public class UserService {
         userStorage.getUserById(otherUserId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + otherUserId));
 
-        List<Integer> mainFriendIdList = userStorage.getFriendsIdListById(userId);
-        List<Integer> otherFriendIdList = userStorage.getFriendsIdListById(otherUserId);
+        List<User> mainUserFriendsList = userStorage.getFriendsUsersListById(userId);
+        List<User> otherUserFriendsList = userStorage.getFriendsUsersListById(otherUserId);
         List<User> commonUsersList = new ArrayList<>();
 
-        for (Integer otherFriendId : otherFriendIdList) {
-            if (mainFriendIdList.contains(otherFriendId)) {
-                User commonFriend = userStorage.getUserById(otherFriendId)
-                        .get();
-                commonUsersList.add(commonFriend);
+        for (User otherUserFriend : otherUserFriendsList) {
+            if (mainUserFriendsList.contains(otherUserFriend)) {
+                commonUsersList.add(otherUserFriend);
             }
         }
         return commonUsersList;

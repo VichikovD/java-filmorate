@@ -32,8 +32,8 @@ public class InMemoryUserStorage implements UserStorage {
         users.put(user.getId(), user);
     }
 
-    public Optional<User> getUserById(int id) {
-        return Optional.ofNullable(users.get(id));
+    public Optional<User> getUserById(int userId) {
+        return Optional.ofNullable(users.get(userId));
     }
 
     public List<User> getAllUsers() {
@@ -50,12 +50,12 @@ public class InMemoryUserStorage implements UserStorage {
                 .remove(friend.getId());
     }
 
-    public List<Integer> getFriendsIdListById(int id) {
-        return new ArrayList<>(friends.get(id));
+    public List<Integer> getFriendsIdListById(int userId) {
+        return new ArrayList<>(friends.get(userId));
     }
 
-    public List<User> getFriendsUsersListById(int id) {
-        List<Integer> friendIdList = getFriendsIdListById(id);
+    public List<User> getFriendsUsersListById(int userId) {
+        List<Integer> friendIdList = new ArrayList<>(friends.get(userId));
         List<User> friendUsersList = new ArrayList<>();
         for (Integer friendId : friendIdList) {
             friendUsersList.add(users.get(friendId));

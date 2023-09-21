@@ -36,17 +36,19 @@ public class InMemoryFilmStorage implements FilmStorage {
         this.likes = new HashMap<>();
     }
 
-    public Integer getLikesQuantity(int id) {
-        return likes.get(id)
+    public Integer getLikesQuantity(int filmId) {
+        return likes.get(filmId)
                 .size();
     }
 
     public void addLike(Film film, User user) {
+        film.addLike();
         likes.get(film.getId())
                 .add(user.getId());
     }
 
     public void deleteLike(Film film, User user) {
+        film.deleteLike();
         likes.get(film.getId())
                 .remove(user.getId());
     }
@@ -65,16 +67,20 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void updateFilm(Film film) {
-        films.put(film.getId(), film);
+    public Film updateFilm(Film film) {
+        int filmId = film.getId();
+        Film oldFilm = films.get(filmId);
+        film.setLikesQuantity(oldFilm.getLikesQuantity());
+        films.put(filmId, film);
+        return film;
     }
 
     public List<Film> getAllFilms() {
         return new ArrayList<>(films.values());
     }
 
-    public Optional<Film> getFilmById(Integer id) {
-        return Optional.ofNullable(films.get(id));
+    public Optional<Film> getFilmById(Integer filmId) {
+        return Optional.ofNullable(films.get(filmId));
     }
 
 }

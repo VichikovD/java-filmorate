@@ -13,7 +13,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 import javax.validation.ConstraintViolationException;
-import java.util.Arrays;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleInvalidIdException(InvalidIdException e) {
         String errorMessage = e.getMessage();
-        log.debug("{} = {}", "ID Exception", errorMessage);
+        log.debug("ID Exception = {}", errorMessage);
         return new ErrorResponse("ID Exception", e.getMessage());
     }
 
@@ -45,7 +46,7 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(NotFoundException e) {
         String errorMessage = e.getMessage();
-        log.debug("{} = {}", "Not Found Exception", errorMessage);
+        log.debug("Not Found Exception = {}", errorMessage);
         return new ErrorResponse("Not Found Exception", e.getMessage());
     }
 
@@ -53,7 +54,7 @@ public class ApplicationExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConstraintViolationException(ConstraintViolationException e) {
         String errorMessage = e.getMessage();
-        log.debug("{} = {}", "Not valid request", errorMessage);
+        log.debug("Not valid request = {}", errorMessage);
         return new ErrorResponse("Not valid request", getFieldName(errorMessage));
     }
 
@@ -69,9 +70,11 @@ public class ApplicationExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleUndefinedException(Exception e) {
+        StringWriter stringWriter = new StringWriter();
+        e.printStackTrace(new PrintWriter(stringWriter));
         String errorMessage = e.getMessage();
-        String stackTrace = Arrays.toString(e.getStackTrace());
-        log.debug("{} = {}", "Exception", errorMessage, e);
+        String stackTrace = stringWriter.toString();
+        log.error("Exception = {}", errorMessage, e);
         return new ErrorResponse(e.toString(), errorMessage, stackTrace);
     }
 
