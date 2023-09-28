@@ -3,24 +3,28 @@ DML requests examples:
 
    SELECT *
    FROM films
-   WHERE film_id = 1
+   LEFT OUTER JOIN ratings AS r ON f.rating_id = r.rating_id;
+   WHERE film_id = 1;
 
 2) "films"
 
    SELECT *
-   FROM films
+   FROM films AS f
+   LEFT OUTER JOIN ratings AS r ON f.rating_id = r.rating_id;
 
 3) "films/popular?count=5"
 
    SELECT *
    FROM films
+   LEFT OUTER JOIN ratings AS r ON f.rating_id = r.rating_id;
    ORDER BY likesQuantity DESC
-   LIMIT 5
+   LIMIT 5;
 
-or 
+or (denormalizated by atribute likesQuantity. Pros: processing speed. Cons: Possible anomalies)
 
    SELECT * 
    FROM films
+   LEFT OUTER JOIN ratings AS r ON f.rating_id = r.rating_id;
    WHERE film_id IN(SELECT film_id
 		    FROM likes
 		    ORDER BY COUNT(user_id) DESC
@@ -30,12 +34,12 @@ or
 
    SELECT *
    FROM users
-   WHERE user_id = 1
+   WHERE user_id = 1;
 
 5) "users"
 
    SELECT *
-   FROM users
+   FROM users;
 
 6) "users/{1}/friends"
 
