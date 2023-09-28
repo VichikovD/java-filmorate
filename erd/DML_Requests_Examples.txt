@@ -1,0 +1,57 @@
+DML requests examples:
+1) "films/1"
+
+   SELECT *
+   FROM films
+   WHERE film_id = 1
+
+2) "films"
+
+   SELECT *
+   FROM films
+
+3) "films/popular?count=5"
+
+   SELECT *
+   FROM films
+   ORDER BY likesQuantity DESC
+   LIMIT 5
+
+or 
+
+   SELECT * 
+   FROM films
+   WHERE film_id IN(SELECT film_id
+		    FROM likes
+		    ORDER BY COUNT(user_id) DESC
+		    LIMIT 5);
+
+4) "users/1"
+
+   SELECT *
+   FROM users
+   WHERE user_id = 1
+
+5) "users"
+
+   SELECT *
+   FROM users
+
+6) "users/{1}/friends"
+
+   SELECT *
+   FROM users
+   WHERE user_id IN(SELECT friend_id
+		    FROM friends
+		    WHERE user_id = 1);
+
+7) "users/1/friends/common/2"
+
+   SELECT *
+   FROM users
+   WHERE user_id IN(SELECT friend_id
+		    FROM friends 
+		    WHERE user_id = 1 
+		      AND friend _id IN(SELECT friend_id
+					FROM friends
+					WHERE user_id = 2));
