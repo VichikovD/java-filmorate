@@ -16,6 +16,9 @@ import java.time.LocalDate;
 public class User {
     Integer id;
 
+    public User() {
+    }
+
     @NotBlank(message = "Email should not be null or empty")
     @Email(message = "Email should be valid")
     String email;
@@ -28,4 +31,12 @@ public class User {
     @Past(message = "Birthday should be in past")
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
     LocalDate birthday;
+
+    public boolean isEmptyName() {
+        return name == null || name.isEmpty();
+    }
+
+    public void setLoginAsName() {
+        name = login;
+    }
 }
