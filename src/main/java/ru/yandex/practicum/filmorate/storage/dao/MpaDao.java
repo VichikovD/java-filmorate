@@ -6,5 +6,6 @@ import java.util.Set;
 
 public interface MpaDao {
     public Mpa getMpaByMpaId(int mpaId);
+
     public Set<Mpa> getAllMpa();
 }

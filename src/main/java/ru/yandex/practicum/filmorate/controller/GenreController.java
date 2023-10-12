@@ -7,12 +7,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.GenreService;
 
 import javax.validation.constraints.Min;
-import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -21,6 +19,7 @@ import java.util.Set;
 @Validated
 public class GenreController {
     GenreService genreService;
+
     @Autowired
     public GenreController(GenreService genreService) {
         this.genreService = genreService;

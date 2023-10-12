@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.dao.GenresDao;
 
 import java.sql.ResultSet;
@@ -62,9 +63,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAllFilms() {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name " +
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id";
+                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+                "GROUP BY f.film_id";
         List<Film> filmList = jdbcTemplate.query(sqlSelect, (rs, rowNum) -> makeFilm(rs));
         for (Film film : filmList) {
             try {
@@ -79,10 +82,12 @@ public class FilmDbStorage implements FilmStorage {
     //  Optional чтобы сохранить интерфейс предыдущей реализации
     @Override
     public Optional<Film> getFilmById(Integer filmId) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name " +
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "WHERE f.film_id = ?";
+                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+                "WHERE f.film_id = ? " +
+                "GROUP BY f.film_id";
         Film film = jdbcTemplate.queryForObject(sqlSelect, (rs, numRow) -> makeFilm(rs), filmId);
         try {
             film.setGenres(genresDao.getGenresByFilmId(filmId));
@@ -90,6 +95,27 @@ public class FilmDbStorage implements FilmStorage {
             log.info("Film {} doesn't have genres", film);
         }
         return Optional.of(film);
+    }
+
+    @Override
+    public List<Film> getMostPopularFilms(Integer count) {
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, COUNT(l.user_id) as likes_quantity " +
+                "FROM films AS f " +
+                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(l.user_id) DESC " +
+                "LIMIT ?";
+        List<Film> filmList = jdbcTemplate.query(sqlSelect, (rs, numRow) -> makeFilm(rs), count);
+        for (Film film : filmList) {
+            try {
+                film.setGenres(genresDao.getGenresByFilmId(film.getId()));
+            } catch (EmptyResultDataAccessException e) {
+                film.setGenres(new HashSet<>());
+                log.info("Film {} doesn't have genres", film);
+            }
+        }
+        return filmList;
     }
 
     @Override
@@ -110,27 +136,6 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlInsert, film.getId(), user.getId());
     }
 
-    @Override
-    public List<Film> getMostPopularFilms(Integer count) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name " +
-                "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(l.user_id) DESC " +
-                "LIMIT ?";
-        List<Film> filmList = jdbcTemplate.query(sqlSelect, (rs, numRow) -> makeFilm(rs), count);
-        for (Film film : filmList) {
-            try {
-                film.setGenres(genresDao.getGenresByFilmId(film.getId()));
-            } catch (EmptyResultDataAccessException e) {
-                film.setGenres(new HashSet<>());
-                log.info("Film {} doesn't have genres", film);
-            }
-        }
-        return filmList;
-    }
-
     private Film makeFilm(ResultSet rs) throws SQLException {
         return Film.builder()
                 .id(rs.getInt("film_id"))
@@ -139,6 +144,7 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rs.getDate("release_date").toLocalDate())
                 .duration(rs.getInt("duration"))
                 .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")))
+                .likesQuantity(rs.getInt("likes_quantity"))
                 .build();
     }
 }

@@ -19,11 +19,11 @@ public class MpaDaoImpl implements MpaDao {
     }
 
     @Override
-    public Set<Mpa> getAllMpa(){
+    public Set<Mpa> getAllMpa() {
         // почему-то в итоге не возвращает сортированный через "ORDER BY genre_id DESC"
         String sqlSelect = "SELECT mpa_id, mpa_name " +
                 "FROM mpas";
-        return new HashSet<Mpa> (jdbcTemplate.query(sqlSelect, (rs, rowNum) -> makeMpa(rs)));
+        return new HashSet<Mpa>(jdbcTemplate.query(sqlSelect, (rs, rowNum) -> makeMpa(rs)));
     }
 
     @Override

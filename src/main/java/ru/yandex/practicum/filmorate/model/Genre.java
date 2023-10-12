@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
 
+import java.util.Objects;
+
 @Builder
 public class Genre {
     Integer id;
@@ -10,6 +12,9 @@ public class Genre {
     public Genre(Integer id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public Genre() {
     }
 
     public Genre(Integer id) {
@@ -30,6 +35,19 @@ public class Genre {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Genre genre = (Genre) o;
+        return Objects.equals(id, genre.id) && Objects.equals(name, genre.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
     }
 
     @Override

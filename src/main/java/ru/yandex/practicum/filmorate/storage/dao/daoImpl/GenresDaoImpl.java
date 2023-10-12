@@ -27,7 +27,7 @@ public class GenresDaoImpl implements GenresDao {
     @Override
     public void updateGenresToFilm(int filmId, Set<Genre> genres) {
         deleteGenresFromFilm(filmId);
-        if(genres != null || Objects.equals(genres, new HashSet<Genre>())) {
+        if (genres != null || Objects.equals(genres, new HashSet<Genre>())) {
             HashMap<String, Object> parameters = new HashMap<>();
             for (Genre genre : genres) {
                 parameters.put("film_id", filmId);
