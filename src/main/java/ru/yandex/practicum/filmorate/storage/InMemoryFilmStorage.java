@@ -19,7 +19,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Comparator<Film> filmComparatorByLikes = new Comparator<Film>() {
         @Override
         public int compare(Film o1, Film o2) {
-            return o2.getLikesQuantity() - o1.getLikesQuantity();
+            return likes.get(o2).size() - likes.get(o1).size();
         }
     };
 
@@ -42,13 +42,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public void addLike(Film film, User user) {
-        film.addLike();
         likes.get(film.getId())
                 .add(user.getId());
     }
 
     public void deleteLike(Film film, User user) {
-        film.deleteLike();
         likes.get(film.getId())
                 .remove(user.getId());
     }
@@ -70,7 +68,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         int filmId = film.getId();
         Film oldFilm = films.get(filmId);
-        film.setLikesQuantity(oldFilm.getLikesQuantity());
         films.put(filmId, film);
         return film;
     }

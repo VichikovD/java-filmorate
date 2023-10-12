@@ -10,6 +10,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Objects;
+import java.util.Set;
 
 @Data
 @Builder
@@ -30,14 +32,21 @@ public class Film {
 
     @Min(value = 0, message = "Film duration should be positive figure")
     int duration;
+    Integer likesQuantity;
 
-    int likesQuantity;
+    Mpa mpa;
+    Set<Genre> genres;
 
-    public void addLike() {
-        likesQuantity++;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Film film = (Film) o;
+        return duration == film.duration && Objects.equals(id, film.id) && Objects.equals(name, film.name) && Objects.equals(description, film.description) && Objects.equals(releaseDate, film.releaseDate) && Objects.equals(likesQuantity, film.likesQuantity) && Objects.equals(mpa, film.mpa) && Objects.equals(genres, film.genres);
     }
 
-    public void deleteLike() {
-        likesQuantity--;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, releaseDate, duration, likesQuantity, mpa, genres);
     }
 }
