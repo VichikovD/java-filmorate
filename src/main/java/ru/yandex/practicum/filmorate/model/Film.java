@@ -10,6 +10,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @Builder
@@ -31,13 +32,6 @@ public class Film {
     @Min(value = 0, message = "Film duration should be positive figure")
     int duration;
 
-    int likesQuantity;
-
-    public void addLike() {
-        likesQuantity++;
-    }
-
-    public void deleteLike() {
-        likesQuantity--;
-    }
+    Mpa mpa;
+    Set<Genre> genres;
 }
