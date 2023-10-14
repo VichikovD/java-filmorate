@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -11,23 +12,22 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.dao.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class FilmDaoImpl implements FilmDao {
-    // Прошу не ругаться на создание NamedParameterJdbcTemplate через явную инициализацию, а не инжектирование,
-    // с использованием интерфейса NamedParameterJdbcOperations т.к.,
-    // как я понял, для этого нужно создать DataSource, что пока не успеваю выучить до жесткого дедлайна,
-    // который в ночь на воскресенье, а я категорически не могу переводиться!
-    // getJdbcTemplate() тоже метод класса JdbcDaoSupport, который так же создается через DataSource
     NamedParameterJdbcOperations namedParameterJdbcTemplate;
 
     public FilmDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
@@ -39,6 +39,7 @@ public class FilmDaoImpl implements FilmDao {
         String sqlInsert = "INSERT INTO films (film_name, description, release_date, duration, mpa_id) " +
                 "VALUES (:film_name, :description, :release_date, :duration, :mpa_id)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
+
         SqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("film_name", film.getName())
                 .addValue("description", film.getDescription())
@@ -48,6 +49,12 @@ public class FilmDaoImpl implements FilmDao {
 
         namedParameterJdbcTemplate.update(sqlInsert, parameters, keyHolder);
         film.setId(keyHolder.getKeyAs(Integer.class));
+
+        if (film.getGenres() == null) {
+            film.setGenres(new HashSet<>());
+        } else {
+            updateGenres(film);
+        }
         return film;
     }
 
@@ -67,9 +74,14 @@ public class FilmDaoImpl implements FilmDao {
                 .addValue("film_id", filmId);
 
         namedParameterJdbcTemplate.update(sqlUpdate, parameters);
+
+        if (film.getGenres() == null) {
+            film.setGenres(new HashSet<>());
+        } else {
+            updateGenres(film);
+        }
     }
 
-    //  Optional, чтобы сохранить интерфейс предыдущей реализации
     @Override
     public Optional<Film> getById(Integer filmId) {
         String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
@@ -84,6 +96,7 @@ public class FilmDaoImpl implements FilmDao {
 
         if (rsFilm.next()) {
             Film film = makeFilm(rsFilm);
+            film.setGenres(getGenreByFilmId(filmId));
             return Optional.of(film);
         } else {
             return Optional.empty();
@@ -99,6 +112,9 @@ public class FilmDaoImpl implements FilmDao {
                 "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
                 "GROUP BY f.film_id";
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, new FilmRowMapper());
+
+        updateGenresToAllFilms(filmList);
+
         return filmList;
     }
 
@@ -115,6 +131,9 @@ public class FilmDaoImpl implements FilmDao {
 
         SqlParameterSource parameters = new MapSqlParameterSource("limit", count);
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
+
+        updateGenresToAllFilms(filmList);
+
         return filmList;
     }
 
@@ -144,6 +163,72 @@ public class FilmDaoImpl implements FilmDao {
                 .addValue("user_id", user.getId());
 
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
+    }
+
+    // для getById(), чтобы загрузить жанры
+    private Set<Genre> getGenreByFilmId(int filmId) {
+        String sql = "SELECT * " +
+                "FROM films_genres AS fg " +
+                "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "WHERE fg.film_id = :film_id";
+        SqlParameterSource parameters = new MapSqlParameterSource("film_id", filmId);
+        Set<Genre> sorteSet = new TreeSet<>(Comparator.comparing(Genre::getId));
+        sorteSet.addAll(namedParameterJdbcTemplate.query(sql, parameters, new GenreRowMapper()));
+        return sorteSet;
+    }
+
+    // для create()/update(), чтобы обновить жанры одним запросом
+    private void updateGenres(Film film) {
+        int filmId = film.getId();
+        List<Genre> genreList = new ArrayList<>(film.getGenres());
+        deleteFromFilm(filmId);
+        String sqlInsert = "INSERT INTO films_genres (film_id, genre_id) " +
+                "VALUES (?, ?)";
+
+        namedParameterJdbcTemplate.getJdbcOperations()
+                .batchUpdate(sqlInsert, new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setInt(1, filmId);
+                        ps.setInt(2, genreList.get(i).getId());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return genreList.size();
+                    }
+                });
+    }
+
+    // для getAll() и getMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
+    private void updateGenresToAllFilms(Collection<Film> filmCollection) {
+        filmCollection.forEach((film -> film.setGenres(new HashSet<Genre>())));
+        Map<Integer, Film> filmMap = filmCollection.stream()
+                .collect(Collectors.toMap(Film::getId, Function.identity()));
+        Collection<Integer> idList = filmMap.keySet();
+
+        String inSql = String.join(",", Collections.nCopies(idList.size(), "?"));
+        String sqlSelect = String.format("SELECT fg.film_id, fg.genre_id, g.genre_name " +
+                "FROM films_genres AS fg " +
+                "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "WHERE fg.film_id IN (%s)", inSql);
+
+        namedParameterJdbcTemplate.getJdbcOperations().query(sqlSelect, idList.toArray(), (rs, rowNum) -> {
+            Film film = filmMap.get(rs.getInt("film_id"));
+            Set<Genre> genres = film.getGenres();
+            genres.add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
+            return null;
+        });
+    }
+
+    // Чтобы предварительно отчистить films_genres перед updateGenre
+    private void deleteFromFilm(int filmId) {
+        String sqlDelete = "DELETE FROM films_genres " +
+                "WHERE film_id = :filmId";
+
+        SqlParameterSource parameters = new MapSqlParameterSource("filmId", filmId);
+
+        namedParameterJdbcTemplate.update(sqlDelete, parameters);
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {

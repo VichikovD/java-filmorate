@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,52 +37,42 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-        if (!mpaDao.getAll().contains(film.getMpa())) {
-            throw new NotFoundException("Mpa id not found. Please check available mpa id via GET /mpa ");
-        }
+        int mpaId = film.getMpa().getId();
+        mpaDao.getById(mpaId)
+                .orElseThrow(() -> new NotFoundException("Mpa not found by id: " + mpaId));
 
         Set<Genre> filmGenres = film.getGenres();
-        if (filmGenres == null) {
-            film.setGenres(new HashSet<Genre>());
-            return filmDao.create(film);
-        } else if (genreDao.getAll().containsAll(filmGenres)) {
-            Film filmToReturn = filmDao.create(film);
-            genreDao.updateToFilm(film);
-            return filmToReturn;
-        } else {
+        if (filmGenres != null
+                && !genreDao.getAll().containsAll(filmGenres)) {
             throw new NotFoundException("Genres id not found. Please check available genre id via GET /genre ");
+        } else {
+            return filmDao.create(film);
         }
     }
 
     public Film updateFilm(Film film) {
         validateService.validateFilmId(film);
         int filmId = film.getId();
+        int mpaId = film.getMpa().getId();
         Set<Genre> filmGenres = film.getGenres();
 
-        filmDao.getById(filmId).orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
+        filmDao.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
+        mpaDao.getById(mpaId)
+                .orElseThrow(() -> new NotFoundException("Mpa not found by id: " + mpaId));
 
-        if (!mpaDao.getAll().contains(film.getMpa())) {
-            throw new NotFoundException("Mpa id not found. Please check available mpa id via GET /mpa ");
-        }
-
-        if (filmGenres == null) {
-            film.setGenres(new HashSet<Genre>());
-            filmDao.update(film);
-            return film;
-        } else if (genreDao.getAll().containsAll(filmGenres)) {
-            filmDao.update(film);
-            genreDao.updateToFilm(film);
-            return film;
-        } else {
+        if (filmGenres != null
+                && !genreDao.getAll().containsAll(filmGenres)) {
             throw new NotFoundException("Genres id not found. Please check available genre id via GET /genre ");
+        } else {
+            filmDao.update(film);
+            return film;
         }
     }
 
     public Film getFilmById(int filmId) {
-        Film film = filmDao.getById(filmId)
+        return filmDao.getById(filmId)
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
-        film.setGenres(genreDao.getByFilmId(filmId));
-        return film;
     }
 
     public void addLike(Integer filmId, Integer userId) {
@@ -105,14 +94,10 @@ public class FilmService {
     }
 
     public List<Film> getAllFilms() {
-        List<Film> filmList = filmDao.getAll();
-        genreDao.setGenresToAllFilms(filmList);
-        return filmList;
+        return filmDao.getAll();
     }
 
     public List<Film> getMostPopularFilms(int count) {
-        List<Film> filmList = filmDao.getMostPopular(count);
-        genreDao.setGenresToAllFilms(filmList);
-        return filmList;
+        return filmDao.getMostPopular(count);
     }
 }

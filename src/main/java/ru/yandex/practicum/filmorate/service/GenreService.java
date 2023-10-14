@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Set;
@@ -21,7 +22,7 @@ public class GenreService {
     }
 
     public Genre getGenreByGenreId(int genreId) {
-        // Добавить проверку полученного резулитата и выбросить NFE если не найден
-        return genreDao.getById(genreId);
+        return genreDao.getById(genreId)
+                .orElseThrow(() -> new NotFoundException("Genre not found by id: " + genreId));
     }
 }

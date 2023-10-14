@@ -4,12 +4,14 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.dao.mapper.MpaRowMapper;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -30,18 +32,26 @@ public class MpaDaoImpl implements MpaDao {
     }
 
     @Override
-    public Mpa getById(int mpaId) {
+    public Optional<Mpa> getById(int mpaId) {
         String sqlSelect = "SELECT mpa_id, mpa_name " +
                 "FROM mpas " +
                 "WHERE mpa_id = :mpa_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("mpa_id", mpaId);
 
-        return namedParameterJdbcTemplate.queryForObject(sqlSelect, parameters, new MpaRowMapper());
+        SqlRowSet rsMpa = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
+
+        if (rsMpa.next()) {
+            Mpa mpa = makeMpa(rsMpa);
+            return Optional.of(mpa);
+        } else {
+            return Optional.empty();
+        }
     }
-    /*private Mpa makeMpa(ResultSet rs) throws SQLException {
+
+    private Mpa makeMpa(SqlRowSet rs) {
         return new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name"));
-    }*/
+    }
 }
 
 
