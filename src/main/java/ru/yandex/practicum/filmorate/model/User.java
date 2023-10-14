@@ -9,10 +9,10 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
-import java.util.Objects;
 
-@Data
-@Builder
+// Используется @ToString для отслеживания тестов в терминале, @EqualsAndHashCode в тестах, @Getter, @Setter,
+@Data       // Не используется только @RequiredArgsConstructor, поэтому добавил @AllArgsConstructor
+@Builder    // @Builder использую лоя читаемости в makeFilm()
 @AllArgsConstructor
 public class User {
     Integer id;
@@ -39,18 +39,5 @@ public class User {
 
     public void setLoginAsName() {
         name = login;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(email, user.email) && Objects.equals(login, user.login) && Objects.equals(name, user.name) && Objects.equals(birthday, user.birthday);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, email, login, name, birthday);
     }
 }

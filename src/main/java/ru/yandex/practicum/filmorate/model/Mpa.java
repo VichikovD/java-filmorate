@@ -1,21 +1,17 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Objects;
 
-@Builder
+@AllArgsConstructor
+@Getter
+@Setter
 public class Mpa {
     Integer id;
     String name;
-
-    public Mpa(Integer id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    public Mpa() {
-    }
 
     public String getName() {
         return name;
@@ -42,18 +38,19 @@ public class Mpa {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Mpa mpa = (Mpa) o;
-        return Objects.equals(id, mpa.id) && Objects.equals(name, mpa.name);
+        return Objects.equals(id, mpa.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(id);
     }
 
     @Override
-    public String toString() {
+    public String toString() {    // для отслеживания тестов в терминале
         return "Mpa{" +
                 "id=" + id +
+                ", name='" + name + '\'' +
                 '}';
     }
 }

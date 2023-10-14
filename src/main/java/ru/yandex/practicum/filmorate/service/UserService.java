@@ -3,22 +3,22 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class UserService {
-    UserStorage userStorage;
+    UserDao userDao;
     ValidateService validateService;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+    public UserService(@Qualifier("userDaoImpl") UserDao userDao,
                        ValidateService validateService) {
-        this.userStorage = userStorage;
+        this.userDao = userDao;
         this.validateService = validateService;
     }
 
@@ -26,62 +26,62 @@ public class UserService {
         if (user.isEmptyName()) {
             user.setLoginAsName();
         }
-        return userStorage.createUser(user);
+        return userDao.create(user);
     }
 
     public User updateUser(User user) {
         validateService.validateUserId(user);
         int userId = user.getId();
-        userStorage.getUserById(userId)
+        userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
         if (user.isEmptyName()) {
             user.setLoginAsName();
         }
-        return userStorage.updateUser(user);
-
+        userDao.update(user);
+        return user;
     }
 
     public User getUserById(int userId) {
-        return userStorage.getUserById(userId)
+        return userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
     }
 
     public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
+        return userDao.getAll();
     }
 
     public void addFriend(int userId, int friendId) {
-        User user = userStorage.getUserById(userId)
+        User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        User friend = userStorage.getUserById(friendId)
+        User friend = userDao.getById(friendId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
 
-        userStorage.addFriend(user, friend);
+        userDao.addFriend(user, friend);
     }
 
     public void deleteFriend(int userId, int friendId) {
-        User user = userStorage.getUserById(userId)
+        User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        User friend = userStorage.getUserById(friendId)
+        User friend = userDao.getById(friendId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
 
-        userStorage.deleteFriend(user, friend);
+        userDao.deleteFriend(user, friend);
     }
 
     public List<User> getFriendsByUserId(int userId) {
-        userStorage.getUserById(userId)
+        userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        return userStorage.getFriendsUsersListById(userId);
+        return userDao.getFriendsListById(userId);
     }
 
     public List<User> getUserCommonFriends(int userId, int otherUserId) {
-        userStorage.getUserById(userId)
+        userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        userStorage.getUserById(otherUserId)
+        userDao.getById(otherUserId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + otherUserId));
 
-        List<User> mainUserFriendsList = userStorage.getFriendsUsersListById(userId);
-        List<User> otherUserFriendsList = userStorage.getFriendsUsersListById(otherUserId);
+        List<User> mainUserFriendsList = userDao.getFriendsListById(userId);
+        List<User> otherUserFriendsList = userDao.getFriendsListById(otherUserId);
         List<User> commonUsersList = new ArrayList<>();
 
         for (User otherUserFriend : otherUserFriendsList) {

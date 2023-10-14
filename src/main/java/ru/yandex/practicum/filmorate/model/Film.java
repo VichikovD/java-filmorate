@@ -8,13 +8,15 @@ import ru.yandex.practicum.filmorate.validation.ValidateReleaseDate;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.Objects;
 import java.util.Set;
 
-@Data
-@Builder
+
+// Используется @ToString для отслеживания тестов в терминале, @EqualsAndHashCode в тестах, @Getter, @Setter,
+@Data       // Не используется только @RequiredArgsConstructor, поэтому добавил @AllArgsConstructor
+@Builder    // @Builder использую лоя читаемости в makeFilm()
 @AllArgsConstructor
 public class Film {
     Integer id;
@@ -34,19 +36,7 @@ public class Film {
     int duration;
     Integer likesQuantity;
 
+    @NotNull(message = "Film mpa can't be null or empty")
     Mpa mpa;
     Set<Genre> genres;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Film film = (Film) o;
-        return duration == film.duration && Objects.equals(id, film.id) && Objects.equals(name, film.name) && Objects.equals(description, film.description) && Objects.equals(releaseDate, film.releaseDate) && Objects.equals(likesQuantity, film.likesQuantity) && Objects.equals(mpa, film.mpa) && Objects.equals(genres, film.genres);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, description, releaseDate, duration, likesQuantity, mpa, genres);
-    }
 }

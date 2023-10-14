@@ -2,25 +2,26 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.dao.GenresDao;
 
 import java.util.Set;
 
 @Service
 public class GenreService {
-    GenresDao genresDao;
+    GenreDao genreDao;
 
     @Autowired
-    public GenreService(GenresDao genresDao) {
-        this.genresDao = genresDao;
+    public GenreService(GenreDao genreDao) {
+        this.genreDao = genreDao;
     }
 
     public Set<Genre> getAllGenres() {
-        return genresDao.getAllGenres();
+        return genreDao.getAll();
     }
 
     public Genre getGenreByGenreId(int genreId) {
-        return genresDao.getGenreByGenreId(genreId);
+        // Добавить проверку полученного резулитата и выбросить NFE если не найден
+        return genreDao.getById(genreId);
     }
 }

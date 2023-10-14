@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.dao.MpaDao;
 
 import java.util.Comparator;
 import java.util.Set;
@@ -18,11 +18,11 @@ public class MpaService {
 
     public Set<Mpa> getAllMpa() {
         Set<Mpa> sortedMpa = new TreeSet<Mpa>(Comparator.comparing(Mpa::getId));
-        sortedMpa.addAll(mpaDao.getAllMpa());
+        sortedMpa.addAll(mpaDao.getAll());
         return sortedMpa;
     }
 
     public Mpa getMpaByMpaId(int mpaId) {
-        return mpaDao.getMpaByMpaId(mpaId);
+        return mpaDao.getById(mpaId);
     }
 }

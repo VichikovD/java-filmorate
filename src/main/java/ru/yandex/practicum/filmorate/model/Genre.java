@@ -1,21 +1,17 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Objects;
 
-@Builder
+@AllArgsConstructor
+@Setter
+@Getter
 public class Genre {
     Integer id;
     String name;
-
-    public Genre(Integer id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    public Genre() {
-    }
 
     public Genre(Integer id) {
         this.id = id;
@@ -42,18 +38,19 @@ public class Genre {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Genre genre = (Genre) o;
-        return Objects.equals(id, genre.id) && Objects.equals(name, genre.name);
+        return Objects.equals(id, genre.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(id);
     }
 
     @Override
-    public String toString() {
+    public String toString() {    // для отслеживания тестов в терминале
         return "Genre{" +
                 "id=" + id +
+                ", name='" + name + '\'' +
                 '}';
     }
 }
