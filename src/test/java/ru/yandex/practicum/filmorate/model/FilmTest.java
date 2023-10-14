@@ -89,6 +89,7 @@ class FilmTest {
                 .description("Description")
                 .releaseDate(LocalDate.of(2000, 10, 15))
                 .duration(100)
+                .mpa(new Mpa(1, "Комедия"))
                 .build();
     }
 }
