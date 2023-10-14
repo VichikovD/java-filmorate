@@ -54,8 +54,8 @@ public class GenreDaoImpl implements GenreDao {
     @Override
     public void setGenresToAllFilms(Collection<Film> filmCollection) {
         filmCollection.forEach((film -> film.setGenres(new HashSet<Genre>())));
-        Map<Integer, Film> filmMap = filmCollection.stream().
-                collect(Collectors.toMap(Film::getId, Function.identity()));
+        Map<Integer, Film> filmMap = filmCollection.stream()
+                .collect(Collectors.toMap(Film::getId, Function.identity()));
         Collection<Integer> idList = filmMap.keySet();
 
         String inSql = String.join(",", Collections.nCopies(idList.size(), "?"));
