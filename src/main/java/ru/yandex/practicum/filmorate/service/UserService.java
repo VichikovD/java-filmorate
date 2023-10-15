@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -75,20 +74,11 @@ public class UserService {
     }
 
     public List<User> getUserCommonFriends(int userId, int otherUserId) {
-        userDao.getById(userId)
+        User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        userDao.getById(otherUserId)
+        User otherUser = userDao.getById(otherUserId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + otherUserId));
 
-        List<User> mainUserFriendsList = userDao.getFriendsListById(userId);
-        List<User> otherUserFriendsList = userDao.getFriendsListById(otherUserId);
-        List<User> commonUsersList = new ArrayList<>();
-
-        for (User otherUserFriend : otherUserFriendsList) {
-            if (mainUserFriendsList.contains(otherUserFriend)) {
-                commonUsersList.add(otherUserFriend);
-            }
-        }
-        return commonUsersList;
+        return userDao.getUserCommonFriends(user, otherUser);
     }
 }

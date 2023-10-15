@@ -37,6 +37,7 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
+        System.out.println(film.getGenres());
         int mpaId = film.getMpa().getId();
         mpaDao.getById(mpaId)
                 .orElseThrow(() -> new NotFoundException("Mpa not found by id: " + mpaId));

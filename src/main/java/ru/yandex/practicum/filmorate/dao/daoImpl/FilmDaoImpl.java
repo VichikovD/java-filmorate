@@ -19,7 +19,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
@@ -50,11 +49,7 @@ public class FilmDaoImpl implements FilmDao {
         namedParameterJdbcTemplate.update(sqlInsert, parameters, keyHolder);
         film.setId(keyHolder.getKeyAs(Integer.class));
 
-        if (film.getGenres() == null) {
-            film.setGenres(new HashSet<>());
-        } else {
-            updateGenres(film);
-        }
+        updateGenres(film);
         return film;
     }
 
@@ -75,11 +70,7 @@ public class FilmDaoImpl implements FilmDao {
 
         namedParameterJdbcTemplate.update(sqlUpdate, parameters);
 
-        if (film.getGenres() == null) {
-            film.setGenres(new HashSet<>());
-        } else {
-            updateGenres(film);
-        }
+        updateGenres(film);
     }
 
     @Override
@@ -113,7 +104,7 @@ public class FilmDaoImpl implements FilmDao {
                 "GROUP BY f.film_id";
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
+        getGenresToAllFilms(filmList);
 
         return filmList;
     }
@@ -132,7 +123,7 @@ public class FilmDaoImpl implements FilmDao {
         SqlParameterSource parameters = new MapSqlParameterSource("limit", count);
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
+        getGenresToAllFilms(filmList);
 
         return filmList;
     }
@@ -170,18 +161,22 @@ public class FilmDaoImpl implements FilmDao {
         String sql = "SELECT * " +
                 "FROM films_genres AS fg " +
                 "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "WHERE fg.film_id = :film_id";
+                "WHERE fg.film_id = :film_id " +
+                "ORDER BY fg.genre_id";
+
         SqlParameterSource parameters = new MapSqlParameterSource("film_id", filmId);
-        Set<Genre> sorteSet = new TreeSet<>(Comparator.comparing(Genre::getId));
-        sorteSet.addAll(namedParameterJdbcTemplate.query(sql, parameters, new GenreRowMapper()));
-        return sorteSet;
+
+        return new LinkedHashSet<>(namedParameterJdbcTemplate.query(sql, parameters, new GenreRowMapper()));
     }
 
     // для create()/update(), чтобы обновить жанры одним запросом
     private void updateGenres(Film film) {
         int filmId = film.getId();
-        List<Genre> genreList = new ArrayList<>(film.getGenres());
+        Set<Genre> genreSet = film.getGenres();
+
         deleteFromFilm(filmId);
+
+        List<Genre> genreList = new ArrayList<>(genreSet);
         String sqlInsert = "INSERT INTO films_genres (film_id, genre_id) " +
                 "VALUES (?, ?)";
 
@@ -201,8 +196,7 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     // для getAll() и getMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
-    private void updateGenresToAllFilms(Collection<Film> filmCollection) {
-        filmCollection.forEach((film -> film.setGenres(new HashSet<Genre>())));
+    private void getGenresToAllFilms(Collection<Film> filmCollection) {
         Map<Integer, Film> filmMap = filmCollection.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
         Collection<Integer> idList = filmMap.keySet();
@@ -229,18 +223,6 @@ public class FilmDaoImpl implements FilmDao {
         SqlParameterSource parameters = new MapSqlParameterSource("filmId", filmId);
 
         namedParameterJdbcTemplate.update(sqlDelete, parameters);
-    }
-
-    private Film makeFilm(ResultSet rs) throws SQLException {
-        return Film.builder()
-                .id(rs.getInt("film_id"))
-                .name(rs.getString("film_name"))
-                .description(rs.getString("description"))
-                .releaseDate(rs.getDate("release_date").toLocalDate())
-                .duration(rs.getInt("duration"))
-                .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")))
-                .likesQuantity(rs.getInt("likes_quantity"))
-                .build();
     }
 
     private Film makeFilm(SqlRowSet rs) {

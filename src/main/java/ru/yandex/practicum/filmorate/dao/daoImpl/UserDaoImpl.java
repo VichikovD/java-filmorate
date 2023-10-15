@@ -13,8 +13,6 @@ import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dao.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,14 +119,22 @@ public class UserDaoImpl implements UserDao {
         return namedParameterJdbcTemplate.query(sqlSelect, parameters, new UserRowMapper());
     }
 
-    private User makeUser(ResultSet rs) throws SQLException {
-        return User.builder()
-                .id(rs.getInt("user_id"))
-                .name(rs.getString("user_name"))
-                .login(rs.getString("login"))
-                .birthday(rs.getDate("birthday").toLocalDate())
-                .email(rs.getString("email"))
-                .build();
+    @Override
+    public List<User> getUserCommonFriends(User user, User otherUser) {
+        String sqlSelect = "SELECT u.user_id, u.email, u.login, u.user_name, u.birthday " +
+                "FROM friends AS f " +
+                "LEFT OUTER JOIN users AS u ON f.friend_id = u.user_id " +
+                "WHERE f.user_id = :user_id AND f.friend_id IN(" +
+                "       SELECT ou.user_id " +
+                "       FROM friends AS f " +
+                "       LEFT OUTER JOIN users AS ou ON f.friend_id = ou.user_id " +
+                "       WHERE f.user_id = :other_user_id)";
+
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("user_id", user.getId())
+                .addValue("other_user_id", otherUser.getId());
+
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, new UserRowMapper());
     }
 
     private User makeUser(SqlRowSet rs) {

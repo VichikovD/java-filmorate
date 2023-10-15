@@ -19,4 +19,6 @@ public interface UserDao {
     public void deleteFriend(User user, User friend);
 
     public List<User> getFriendsListById(int userId);
+
+    public List<User> getUserCommonFriends(User user, User otherUser);
 }

@@ -9,7 +9,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Setter
 @Getter
-public class Genre {
+public class Genre implements Comparable<Genre> {
     Integer id;
     String name;
 
@@ -52,5 +52,10 @@ public class Genre {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Genre g) {
+        return this.id.compareTo(g.getId());
     }
 }
