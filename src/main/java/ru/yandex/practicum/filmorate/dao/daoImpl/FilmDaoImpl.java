@@ -104,7 +104,7 @@ public class FilmDaoImpl implements FilmDao {
                 "GROUP BY f.film_id";
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, new FilmRowMapper());
 
-        getGenresToAllFilms(filmList);
+        updateGenresToAllFilms(filmList);
 
         return filmList;
     }
@@ -123,7 +123,7 @@ public class FilmDaoImpl implements FilmDao {
         SqlParameterSource parameters = new MapSqlParameterSource("limit", count);
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
-        getGenresToAllFilms(filmList);
+        updateGenresToAllFilms(filmList);
 
         return filmList;
     }
@@ -196,18 +196,17 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     // для getAll() и getMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
-    private void getGenresToAllFilms(Collection<Film> filmCollection) {
+    private void updateGenresToAllFilms(Collection<Film> filmCollection) {
         Map<Integer, Film> filmMap = filmCollection.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
         Collection<Integer> idList = filmMap.keySet();
 
-        String inSql = String.join(",", Collections.nCopies(idList.size(), "?"));
-        String sqlSelect = String.format("SELECT fg.film_id, fg.genre_id, g.genre_name " +
+        String sqlSelect = "SELECT fg.film_id, fg.genre_id, g.genre_name " +
                 "FROM films_genres AS fg " +
                 "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "WHERE fg.film_id IN (%s)", inSql);
-
-        namedParameterJdbcTemplate.getJdbcOperations().query(sqlSelect, idList.toArray(), (rs, rowNum) -> {
+                "WHERE fg.film_id IN (:ids)";
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
+        namedParameterJdbcTemplate.query(sqlSelect, parameters, (rs, rowNum) -> {
             Film film = filmMap.get(rs.getInt("film_id"));
             Set<Genre> genres = film.getGenres();
             genres.add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));

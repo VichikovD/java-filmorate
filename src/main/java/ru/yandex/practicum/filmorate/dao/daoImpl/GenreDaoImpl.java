@@ -2,14 +2,13 @@ package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.ResultSetWrappingSqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.ValidateService;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +33,7 @@ public class GenreDaoImpl implements GenreDao {
         String sql = "SELECT genre_id, genre_name " +
                 "FROM genres";
         Set<Genre> sorteSet = new TreeSet<>(Comparator.comparing(Genre::getId));
-        sorteSet.addAll(jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(rs)));
+        sorteSet.addAll(jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(new ResultSetWrappingSqlRowSet(rs))));
         return sorteSet;
     }
 
@@ -51,10 +50,6 @@ public class GenreDaoImpl implements GenreDao {
         } else {
             return Optional.empty();
         }
-    }
-
-    public Genre makeGenre(ResultSet rs) throws SQLException {
-        return new Genre(rs.getInt("genre_id"), rs.getString("genre_name"));
     }
 
     public Genre makeGenre(SqlRowSet rs) {

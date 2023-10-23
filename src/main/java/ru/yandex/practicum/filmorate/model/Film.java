@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import ru.yandex.practicum.filmorate.validation.ValidateReleaseDate;
 
 import javax.validation.constraints.Min;
@@ -10,15 +9,19 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 
 
 // Используется @ToString для отслеживания тестов в терминале, @EqualsAndHashCode в тестах, @Getter, @Setter,
-@Data       // Не используется только @RequiredArgsConstructor, поэтому добавил @AllArgsConstructor
-@Builder    // @Builder использую лоя читаемости в makeFilm()
+// Не используется только @RequiredArgsConstructor, поэтому добавил @AllArgsConstructor
+// @Builder использую лоя читаемости в makeFilm()
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
+@Builder
 public class Film {
     Integer id;
 
@@ -49,6 +52,6 @@ public class Film {
         this.duration = duration;
         this.likesQuantity = likesQuantity;
         this.mpa = mpa;
-        this.genres = Objects.requireNonNullElseGet(genres, () -> new TreeSet<>(Comparator.comparing(Genre::getId)));
+        this.genres = Objects.requireNonNullElseGet(genres, LinkedHashSet::new);
     }
 }

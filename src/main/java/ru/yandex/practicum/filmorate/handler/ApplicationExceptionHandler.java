@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -22,13 +21,6 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class ApplicationExceptionHandler {
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleInvalidIdException(EmptyResultDataAccessException e) {
-        String errorMessage = e.getMessage();
-        log.error("EmptyResultDataAccessException = " + errorMessage, e);
-        return new ErrorResponse("Data Base doesn't contain requested data", e.getMessage());
-    }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)

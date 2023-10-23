@@ -1,35 +1,19 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Objects;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Setter
 @Getter
+@ToString
 public class Genre implements Comparable<Genre> {
     Integer id;
     String name;
 
     public Genre(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -44,14 +28,6 @@ public class Genre implements Comparable<Genre> {
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {    // для отслеживания тестов в терминале
-        return "Genre{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
     }
 
     @Override
