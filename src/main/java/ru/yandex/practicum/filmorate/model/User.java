@@ -1,23 +1,25 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
 
-@Data
-@Builder
+// Используется @ToString для отслеживания тестов в терминале, @EqualsAndHashCode в тестах, @Getter, @Setter,
+// Не используется только @RequiredArgsConstructor, поэтому добавил @AllArgsConstructor
+// @Builder использую лоя читаемости в makeFilm()
 @AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
+@Builder
 public class User {
     Integer id;
-
-    public User() {
-    }
 
     @NotBlank(message = "Email should not be null or empty")
     @Email(message = "Email should be valid")

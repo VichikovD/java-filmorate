@@ -41,7 +41,7 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable("id") int id) {
-        log.info("GET {}", "\"/films/" + id + "\"");
+        log.info("GET \"/films/" + id + "\"");
         Film filmToReturn = filmService.getFilmById(id);
         log.debug(filmToReturn.toString());
         return filmToReturn;
@@ -49,7 +49,7 @@ public class FilmController {
 
     @GetMapping
     public List<Film> getAllFilms() {
-        log.info("GET {}", "\"/films\"");
+        log.info("GET \"/films\"");
         List<Film> filmsList = filmService.getAllFilms();
         log.debug(filmsList.toString());
         return filmsList;
@@ -63,8 +63,8 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteFriend(@PathVariable int id,
-                             @PathVariable int userId) {
+    public void deleteLike(@PathVariable int id,
+                           @PathVariable int userId) {
         log.info("DELETE {}", "\"/films/" + id + "/like/" + userId + "\"");
         filmService.deleteLike(id, userId);
     }

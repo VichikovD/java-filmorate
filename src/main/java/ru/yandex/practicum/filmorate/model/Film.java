@@ -1,19 +1,27 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import ru.yandex.practicum.filmorate.validation.ValidateReleaseDate;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 
-@Data
+
+// Используется @ToString для отслеживания тестов в терминале, @EqualsAndHashCode в тестах, @Getter, @Setter,
+// Не используется только @RequiredArgsConstructor, поэтому добавил @AllArgsConstructor
+// @Builder использую лоя читаемости в makeFilm()
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 @Builder
-@AllArgsConstructor
 public class Film {
     Integer id;
 
@@ -30,14 +38,20 @@ public class Film {
 
     @Min(value = 0, message = "Film duration should be positive figure")
     int duration;
+    Integer likesQuantity;
 
-    int likesQuantity;
+    @NotNull(message = "Film mpa can't be null or empty")
+    Mpa mpa;
+    Set<Genre> genres;
 
-    public void addLike() {
-        likesQuantity++;
-    }
-
-    public void deleteLike() {
-        likesQuantity--;
+    public Film(Integer id, String name, String description, LocalDate releaseDate, int duration, Integer likesQuantity, Mpa mpa, Set<Genre> genres) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.likesQuantity = likesQuantity;
+        this.mpa = mpa;
+        this.genres = Objects.requireNonNullElseGet(genres, LinkedHashSet::new);
     }
 }
