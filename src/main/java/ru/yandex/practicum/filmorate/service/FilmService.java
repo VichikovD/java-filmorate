@@ -101,4 +101,14 @@ public class FilmService {
     public List<Film> getMostPopularFilms(int count) {
         return filmDao.getMostPopular(count);
     }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        userDao.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        userDao.getById(friendId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+
+        return filmDao.getCommon(userId, friendId);
+    }
+
 }
