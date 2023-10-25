@@ -76,4 +76,13 @@ public class FilmController {
         log.debug(filmsList.toString());
         return filmsList;
     }
+
+    @GetMapping("/films/director/{directorId}?sortBy=[year,likes]")
+    public List<Film> getDirectorFilms(@PathVariable int directorId,
+                                       @RequestParam(defaultValue = "film_id") String sortParam) {
+        log.info("GET {}, query parameters={}", "\"/films/director/" + directorId + "\"", "{sort=" + sortParam + "}");
+        List<Film> filmsList = filmService.getDirectorFilms(directorId, sortParam);
+        log.debug(filmsList.toString());
+        return filmsList;
+    }
 }
