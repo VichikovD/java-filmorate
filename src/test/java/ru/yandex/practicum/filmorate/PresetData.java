@@ -23,9 +23,9 @@ public class PresetData {
     // id, name, description, releaseDate, duration, likes, Mpa, set<Genre>
     public Film getFilm(int filmId) {
         List<Film> filmList = List.of(
-                new Film(null, "name1", "description1", LocalDate.of(1991, 1, 1), 101, 0, getMpaList().get(0), null),
-                new Film(null, "name2", "description2", LocalDate.of(1992, 2, 2), 102, 0, getMpaList().get(1), new HashSet<>()),
-                new Film(null, "name3", "description3", LocalDate.of(1993, 3, 3), 103, 0, getMpaList().get(2), new HashSet<>()));
+                new Film(null, "name1", "description1", LocalDate.of(1991, 1, 1), 101, 0, getMpaList().get(0), null,null),
+                new Film(null, "name2", "description2", LocalDate.of(1992, 2, 2), 102, 0, getMpaList().get(1), new HashSet<>(),null),
+                new Film(null, "name3", "description3", LocalDate.of(1993, 3, 3), 103, 0, getMpaList().get(2), new HashSet<>(),null));
         return filmList.get(filmId);
     }
 

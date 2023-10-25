@@ -13,10 +13,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mapper.GenreRowMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -110,18 +107,27 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> getMostPopular(Integer count) {
+    public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
+                "m.mpa_name,d.director_id, d.director_name, COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN films_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN films_director fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN director d ON fd.director_id = d.director_id " +
+                "WHERE (:genreId IS NULL OR fg.genre_id = :genreId) " +
+                "AND (:year IS NULL OR YEAR(f.release_date) = :year) " +
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(l.user_id) DESC " +
                 "LIMIT :limit";
 
-        SqlParameterSource parameters = new MapSqlParameterSource("limit", count);
-        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("limit", count);
+        parameters.addValue("genreId", genreId);
+        parameters.addValue("year", year);
+
+        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, new FilmRowMapper());
 
         updateGenresToAllFilms(filmList);
 
@@ -251,7 +257,7 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     private Film makeFilm(SqlRowSet rs) {
-        return Film.builder()
+        Film film = Film.builder()
                 .id(rs.getInt("film_id"))
                 .name(rs.getString("film_name"))
                 .description(rs.getString("description"))
@@ -260,6 +266,18 @@ public class FilmDaoImpl implements FilmDao {
                 .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")))
                 .likesQuantity(rs.getInt("likes_quantity"))
                 .build();
+        Set<Director> directors = new HashSet<>();
+        do {
+            int directorId = rs.getInt("director_id");
+            String directorName = rs.getString("director_name");
+            if (directorId > 0 && directorName != null) {
+                Director director = new Director(directorId, directorName);
+                directors.add(director);
+            }
+        } while (rs.next());
+
+        film.setDirectors(directors);
+        return film;
     }
 }
 

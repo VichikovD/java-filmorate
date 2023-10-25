@@ -15,8 +15,7 @@ public interface FilmDao {
 
     public Optional<Film> getById(Integer filmId);
 
-
-    public List<Film> getMostPopular(Integer count);
+    List<Film> getMostPopular(Integer count, Integer genreId, Integer year);
 
     List<Film> getCommon(Integer userId, Integer friendId);
 
