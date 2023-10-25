@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FilmDao {
-    public Film create(Film film);
+    Film create(Film film);
 
-    public void update(Film film);
+    void update(Film film);
 
-    public List<Film> getAll();
+    List<Film> getAll();
 
-    public Optional<Film> getById(Integer filmId);
+    Optional<Film> getById(Integer filmId);
 
     void deleteById(Integer id);
 
@@ -23,5 +23,7 @@ public interface FilmDao {
 
     void addLike(Film film, User userId);
 
-    public void deleteLike(Film filmId, User userId);
+    void deleteLike(Film filmId, User userId);
+
+    List<Film> getByDirectorId(Integer directorId, String sortParam);
 }
