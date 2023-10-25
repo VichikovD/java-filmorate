@@ -18,6 +18,8 @@ public interface FilmDao {
 
     public List<Film> getMostPopular(Integer count);
 
+    List<Film> getCommon(Integer userId, Integer friendId);
+
     void addLike(Film film, User userId);
 
     public void deleteLike(Film filmId, User userId);

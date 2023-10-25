@@ -76,4 +76,16 @@ public class FilmController {
         log.debug(filmsList.toString());
         return filmsList;
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        log.info("GET {}, query parameters={}", "\"/films/common\"", "{userId=" + userId + ", friendId=" + friendId + "}");
+
+        List<Film> commonFilms = filmService.getCommonFilms(userId, friendId);
+        log.debug(commonFilms.toString());
+
+        return commonFilms;
+    }
+
 }
+
