@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.dao.mapper.MpaRowMapper;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -24,11 +24,11 @@ public class MpaDaoImpl implements MpaDao {
 
     @Override
     public Set<Mpa> getAll() {
-        // почему-то в итоге не возвращает сортированный через "ORDER BY genre_id DESC"
         String sqlSelect = "SELECT mpa_id, mpa_name " +
-                "FROM mpas";
+                "FROM mpas " +
+                "ORDER BY mpa_id";
 
-        return new HashSet<Mpa>(namedParameterJdbcTemplate.query(sqlSelect, new MpaRowMapper()));
+        return new LinkedHashSet<>(namedParameterJdbcTemplate.query(sqlSelect, new MpaRowMapper()));
     }
 
     @Override
