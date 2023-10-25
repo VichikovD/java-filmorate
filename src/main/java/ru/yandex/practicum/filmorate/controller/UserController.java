@@ -44,6 +44,12 @@ public class UserController {
         return userToReturn;
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteFilmById(@PathVariable("id") Integer id) {
+        log.info("DELETE \"/users/" + id + "\"");
+        userService.deleteById(id);
+    }
+
     @GetMapping
     public List<User> getAllUsers() {
         log.info("GET {}", "\"/users\"");

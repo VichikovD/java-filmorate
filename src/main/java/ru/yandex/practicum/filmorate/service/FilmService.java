@@ -76,6 +76,10 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
     }
 
+    public void deleteById(Integer id) {
+        filmDao.deleteById(id);
+    }
+
     public void addLike(Integer filmId, Integer userId) {
         Film film = filmDao.getById(filmId)
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));

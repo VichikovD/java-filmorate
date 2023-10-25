@@ -81,6 +81,18 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    public void deleteById(Integer id) {
+        String sqlInsert = "DELETE FROM users " +
+                "WHERE user_id = :user_id ";
+
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("user_id", id);
+
+        namedParameterJdbcTemplate.update(sqlInsert, parameters);
+    }
+
+
+    @Override
     public void addFriend(User user, User friend) {
         String sqlInsert = "MERGE INTO friends AS f " +
                 "USING VALUES (:user_id, :friend_id) AS source(user_id, friend_id) " +
