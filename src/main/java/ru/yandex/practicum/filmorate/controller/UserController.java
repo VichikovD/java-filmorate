@@ -45,7 +45,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteFilmById(@PathVariable("id") Integer id) {
+    public void deleteUserById(@PathVariable("id") Integer id) {
         log.info("DELETE \"/users/" + id + "\"");
         userService.deleteById(id);
     }

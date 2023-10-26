@@ -99,8 +99,7 @@ public class FilmDaoImpl implements FilmDao {
         String sqlInsert = "DELETE FROM films " +
                 "WHERE film_id = :film_id ";
 
-        SqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("film_id", id);
+        SqlParameterSource parameters = new MapSqlParameterSource("film_id", id);
 
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
     }

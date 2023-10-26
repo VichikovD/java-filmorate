@@ -85,8 +85,7 @@ public class UserDaoImpl implements UserDao {
         String sqlInsert = "DELETE FROM users " +
                 "WHERE user_id = :user_id ";
 
-        SqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("user_id", id);
+        SqlParameterSource parameters = new MapSqlParameterSource("user_id", id);
 
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
     }
