@@ -82,12 +82,12 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public void deleteById(Integer id) {
-        String sqlInsert = "DELETE FROM users " +
+        String sqlDelete = "DELETE FROM users " +
                 "WHERE user_id = :user_id ";
 
         SqlParameterSource parameters = new MapSqlParameterSource("user_id", id);
 
-        namedParameterJdbcTemplate.update(sqlInsert, parameters);
+        namedParameterJdbcTemplate.update(sqlDelete, parameters);
     }
 
 

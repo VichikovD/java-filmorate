@@ -96,12 +96,12 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public void deleteById(Integer id) {
-        String sqlInsert = "DELETE FROM films " +
+        String sqlDelete = "DELETE FROM films " +
                 "WHERE film_id = :film_id ";
 
         SqlParameterSource parameters = new MapSqlParameterSource("film_id", id);
 
-        namedParameterJdbcTemplate.update(sqlInsert, parameters);
+        namedParameterJdbcTemplate.update(sqlDelete, parameters);
     }
 
 
