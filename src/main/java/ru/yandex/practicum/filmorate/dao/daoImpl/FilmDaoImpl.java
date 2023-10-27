@@ -335,7 +335,7 @@ public class FilmDaoImpl implements FilmDao {
                 .build();
     }
 
-    private List<Film> getFilmsWithDirectors (String sql, SqlParameterSource parameters, NamedParameterJdbcOperations namedParameterJdbcTemplate) {
+    private List<Film> getFilmsWithDirectors(String sql, SqlParameterSource parameters, NamedParameterJdbcOperations namedParameterJdbcTemplate) {
         Map<Integer, Film> filmMap = new HashMap<>();
 
         namedParameterJdbcTemplate.query(sql, parameters, (rs) -> {
