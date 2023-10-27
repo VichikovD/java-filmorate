@@ -265,7 +265,7 @@ public class FilmDaoImpl implements FilmDao {
         deleteDirectorsFromFilm(filmId);
 
         List<Director> directorList = new ArrayList<>(directorSet);
-        String sqlInsert = "INSERT INTO films_directors (film_id, director_id " +
+        String sqlInsert = "INSERT INTO films_directors (film_id, director_id) " +
                 "VALUES (?, ?)";
 
         namedParameterJdbcTemplate.getJdbcOperations()
