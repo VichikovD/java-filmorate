@@ -140,6 +140,31 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
+    public List<Film> getCommon(Integer userId, Integer friendId) {
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+                "m.mpa_name, COUNT(l3.user_id) as likes_quantity " +
+                "FROM films f " +
+                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "INNER JOIN likes l1 ON f.film_id = l1.film_id " +
+                "INNER JOIN likes l2 ON f.film_id = l2.film_id " +
+                "LEFT JOIN likes l3 ON f.film_id = l3.film_id " +
+                "WHERE l1.user_id = :userId AND l2.user_id = :friendId " +
+                "GROUP BY f.film_id " +
+                "ORDER BY likes_quantity DESC ";
+
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("friendId", friendId);
+
+        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, params, new FilmRowMapper());
+
+        updateGenresToAllFilms(filmList);
+
+        return filmList;
+
+    }
+
+    @Override
     public void addLike(Film film, User user) {
         String sqlInsert = "MERGE INTO likes AS l " +
                 "USING VALUES (:film_id, :user_id) AS source(film_id, user_id) " +
