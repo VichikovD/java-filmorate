@@ -74,8 +74,9 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Optional<Film> getById(Integer filmId) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                "d.director_id, d.director_name, m.mpa_id, m.mpa_name, " +
+                "COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
                 "LEFT OUTER JOIN films_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
@@ -106,7 +107,8 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getAll() {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                "d.director_id, d.director_name, m.mpa_id, m.mpa_name, " +
                 "COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
                 "LEFT OUTER JOIN films_directors AS fd ON f.film_id = fd.film_id " +
@@ -123,8 +125,9 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getMostPopular(Integer count) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                "d.director_id, d.director_name, m.mpa_id, m.mpa_name, " +
+                "COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
                 "LEFT OUTER JOIN films_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
