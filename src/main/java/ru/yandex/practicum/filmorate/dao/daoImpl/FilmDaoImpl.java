@@ -310,9 +310,9 @@ public class FilmDaoImpl implements FilmDao {
     // Чтобы предварительно отчистить films_genres перед updateGenre
     private void deleteGenresFromFilm(int filmId) {
         String sqlDelete = "DELETE FROM films_genres " +
-                "WHERE film_id = :filmId";
+                "WHERE film_id = :film_id";
 
-        SqlParameterSource parameters = new MapSqlParameterSource("filmId", filmId);
+        SqlParameterSource parameters = new MapSqlParameterSource("film_id", filmId);
 
         namedParameterJdbcTemplate.update(sqlDelete, parameters);
     }
@@ -343,7 +343,7 @@ public class FilmDaoImpl implements FilmDao {
 
         namedParameterJdbcTemplate.query(sql, parameters, (rs) -> {
             while (rs.next()) {
-                int filmId = rs.getInt("id");
+                int filmId = rs.getInt("film_id");
 
                 if (!filmMap.containsKey(filmId)) {
                     Film film = makeFilm(new ResultSetWrappingSqlRowSet(rs));
