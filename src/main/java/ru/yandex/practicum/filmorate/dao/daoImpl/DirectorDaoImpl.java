@@ -68,7 +68,7 @@ public class DirectorDaoImpl implements DirectorDao {
 
     @Override
     public void deleteById(Integer id) {
-        String sqlDelete = "DELETE * FROM directors " +
+        String sqlDelete = "DELETE FROM directors " +
                 "WHERE director_id = :director_id";
         SqlParameterSource parameters = new MapSqlParameterSource("director_id", id);
         namedParameterJdbcTemplate.update(sqlDelete, parameters);
