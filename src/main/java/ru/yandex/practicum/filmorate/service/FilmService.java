@@ -3,15 +3,12 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmDao;
-import ru.yandex.practicum.filmorate.dao.GenreDao;
-import ru.yandex.practicum.filmorate.dao.MpaDao;
-import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -22,17 +19,20 @@ public class FilmService {
     GenreDao genreDao;
     MpaDao mpaDao;
     ValidateService validateService;
+    EventDao eventDao;
 
     @Autowired
     public FilmService(@Qualifier("filmDaoImpl") FilmDao filmDao,
                        @Qualifier("userDaoImpl") UserDao userDao,
                        @Qualifier("genreDaoImpl") GenreDao genreDao,
                        @Qualifier("mpaDaoImpl") MpaDao mpaDao,
+                       @Qualifier("eventDaoImpl") EventDao eventDao,
                        ValidateService validateService) {
         this.filmDao = filmDao;
         this.userDao = userDao;
         this.genreDao = genreDao;
         this.mpaDao = mpaDao;
+        this.eventDao = eventDao;
         this.validateService = validateService;
     }
 
@@ -85,6 +85,15 @@ public class FilmService {
         User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
 
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(EventOperation.ADD)
+                .entityId(filmId)
+                .build();
+        eventDao.create(event);
+
         filmDao.addLike(film, user);
     }
 
@@ -93,6 +102,15 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
         User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(EventOperation.REMOVE)
+                .entityId(filmId)
+                .build();
+        eventDao.create(event);
 
         filmDao.deleteLike(film, user);
     }

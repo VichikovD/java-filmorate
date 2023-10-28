@@ -3,22 +3,31 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.EventDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 @Service
 public class UserService {
     UserDao userDao;
     ValidateService validateService;
+    EventDao eventDao;
 
     @Autowired
     public UserService(@Qualifier("userDaoImpl") UserDao userDao,
+                       @Qualifier("eventDaoImpl") EventDao eventDao,
                        ValidateService validateService) {
         this.userDao = userDao;
         this.validateService = validateService;
+        this.eventDao = eventDao;
     }
 
     public User createUser(User user) {
@@ -59,6 +68,15 @@ public class UserService {
         User friend = userDao.getById(friendId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
 
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.FRIEND)
+                .operation(EventOperation.ADD)
+                .entityId(friendId)
+                .build();
+        eventDao.create(event);
+
         userDao.addFriend(user, friend);
     }
 
@@ -67,6 +85,15 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
         User friend = userDao.getById(friendId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.FRIEND)
+                .operation(EventOperation.REMOVE)
+                .entityId(friendId)
+                .build();
+        eventDao.create(event);
 
         userDao.deleteFriend(user, friend);
     }
@@ -84,5 +111,11 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + otherUserId));
 
         return userDao.getUserCommonFriends(user, otherUser);
+    }
+
+    public List<Event> getAllEventsByUserId(Integer userId) {
+        userDao.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        return userDao.getAllEventsByUserId(userId);
     }
 }
