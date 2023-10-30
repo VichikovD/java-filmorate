@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,7 @@ public interface FilmDao {
 
     List<Film> getAll();
 
-    List<Film> getFilmsViaSubstringSearch(String query, List<String> filter);
+    List<Film> getFilmsViaSubstringSearch(HashMap<String, String> searchFilter);
 
     Optional<Film> getById(Integer filmId);
 

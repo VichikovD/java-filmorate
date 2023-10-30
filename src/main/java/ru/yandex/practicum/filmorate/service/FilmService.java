@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.*;
 
 @Service
 public class FilmService {
@@ -132,26 +133,30 @@ public class FilmService {
     }
 
     public List<Film> getAllViaSubstringSearch(String query, String filter) {
-        List<String> filterList = new ArrayList<>();
-        switch (filter.toLowerCase()
-                .replaceAll(" ", "")) {
+        HashMap<String, String> filterMap = new HashMap<>();
+        String correctedFilter = filter.toLowerCase()
+                .replaceAll(" ", "");
+        String correctedQuery = query.toLowerCase()
+                .replaceAll(";", "");
+
+        switch (correctedFilter) {
             case "director":
-                filterList.add(query);
-                filterList.add("%");
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "NULL");
                 break;
             case "title":
-                filterList.add("%");
-                filterList.add(query);
+                filterMap.put("director", "NULL");
+                filterMap.put("title", "%" + correctedQuery + "%");
                 break;
             case "director,title":
             case "title,director":
-                filterList.add(query);
-                filterList.add(query);
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "%" + correctedQuery + "%");
                 break;
             default:
                 throw new ValidateException("Invalid filer: %s. Filter may have the following values: director, title");
         }
-        return filmDao.getFilmsViaSubstringSearch(query, filterList);
+        return filmDao.getFilmsViaSubstringSearch(filterMap);
     }
 
     public List<Film> getMostPopularFilms(int count) {
