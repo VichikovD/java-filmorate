@@ -110,7 +110,7 @@ public class FilmDaoImpl implements FilmDao {
     @Override
     public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) as likes_quantity, d.director_id, d.director_name " +
+                "m.mpa_name, COUNT(l.user_id) AS likes_quantity, d.director_id, d.director_name " +
                 "FROM films AS f " +
                 "LEFT JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
@@ -120,7 +120,7 @@ public class FilmDaoImpl implements FilmDao {
                 "WHERE (:genreId IS NULL OR fg.genre_id = :genreId) " +
                 "AND (:year IS NULL OR YEAR(f.release_date) = :year) " +
                 "GROUP BY f.film_id " +
-                "ORDER BY COUNT(l.user_id) DESC " +
+                "ORDER BY likes_quantity DESC " +
                 "LIMIT :limit";
 
         MapSqlParameterSource parameters = new MapSqlParameterSource();
@@ -128,7 +128,7 @@ public class FilmDaoImpl implements FilmDao {
         parameters.addValue("genreId", genreId);
         parameters.addValue("year", year);
 
-        Map<Integer, Film> filmMap = new HashMap<>();
+        Map<Integer, Film> filmMap = new LinkedHashMap<>();
 
         namedParameterJdbcTemplate.query(sqlSelect, parameters, (rs) -> {
             while (rs.next()) {
