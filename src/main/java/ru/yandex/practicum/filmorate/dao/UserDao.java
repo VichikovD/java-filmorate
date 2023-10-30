@@ -15,6 +15,8 @@ public interface UserDao {
 
     public Optional<User> getById(int userId);
 
+    void deleteById(Integer id);
+
     public void addFriend(User user, User friend);
 
     public void deleteFriend(User user, User friend);

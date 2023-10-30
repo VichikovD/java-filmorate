@@ -46,6 +46,10 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
     }
 
+    public void deleteById(Integer id) {
+        userDao.deleteById(id);
+    }
+
     public List<User> getAllUsers() {
         return userDao.getAll();
     }

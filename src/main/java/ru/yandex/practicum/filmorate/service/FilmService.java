@@ -37,7 +37,6 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-        System.out.println(film.getGenres());
         int mpaId = film.getMpa().getId();
         mpaDao.getById(mpaId)
                 .orElseThrow(() -> new NotFoundException("Mpa not found by id: " + mpaId));
@@ -76,6 +75,10 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
     }
 
+    public void deleteById(Integer id) {
+        filmDao.deleteById(id);
+    }
+
     public void addLike(Integer filmId, Integer userId) {
         Film film = filmDao.getById(filmId)
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
@@ -101,4 +104,14 @@ public class FilmService {
     public List<Film> getMostPopularFilms(int count) {
         return filmDao.getMostPopular(count);
     }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        userDao.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        userDao.getById(friendId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+
+        return filmDao.getCommon(userId, friendId);
+    }
+
 }
