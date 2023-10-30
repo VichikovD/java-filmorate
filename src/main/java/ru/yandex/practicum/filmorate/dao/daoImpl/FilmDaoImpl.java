@@ -12,8 +12,8 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.mapper.DirectorRowMapper;
-import ru.yandex.practicum.filmorate.dao.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.dao.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.dao.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.PreparedStatement;
