@@ -162,7 +162,7 @@ public class UserDaoImpl implements UserDao {
                 + "(SELECT user_id FROM likes WHERE user_id != :user_id AND film_id IN "
                 + "(SELECT film_id FROM likes WHERE user_id = :user_id) "
                 + "GROUP BY user_id ORDER BY COUNT(film_id) DESC LIMIT 1) "
-                + "AND film_id NOT IN (SELECT film_id FROM likes WHERE user_id = 3);";
+                + "AND film_id NOT IN (SELECT film_id FROM likes WHERE user_id = :user_id);";
         SqlParameterSource parameters = new MapSqlParameterSource("user_id", userId);
         SqlRowSet rsFilms = namedParameterJdbcTemplate.queryForRowSet(sqlQuery, parameters);
         List<Integer> recommendedFilmsIds = new ArrayList<>();

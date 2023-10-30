@@ -102,7 +102,7 @@ public class FilmDaoImpl implements FilmDao {
                 "FROM films AS f " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
-                "WHERE f.film_id IN :films_ids " +
+                "WHERE f.film_id IN (:films_ids) " +
                 "GROUP BY f.film_id";
         SqlParameterSource parameters = new MapSqlParameterSource("films_ids", filmsIds);
         SqlRowSet rsFilm = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
@@ -255,7 +255,7 @@ public class FilmDaoImpl implements FilmDao {
     @Override
     public void deleteLike(Film film, User user) {
         String sqlInsert = "DELETE FROM likes " +
-                "WHERE film_id = :film_id AND user_id = :film_id";
+                "WHERE film_id = :film_id AND user_id = :user_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("film_id", film.getId())
