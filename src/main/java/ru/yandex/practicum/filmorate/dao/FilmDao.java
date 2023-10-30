@@ -18,6 +18,8 @@ public interface FilmDao {
 
     Optional<Film> getById(Integer filmId);
 
+    List<Film> getByIds(List<Integer> filmsIds);
+
     void deleteById(Integer id);
 
     List<Film> getCommon(Integer userId, Integer friendId);

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.EventDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventOperation;
 import ru.yandex.practicum.filmorate.model.EventType;
@@ -116,5 +117,9 @@ public class UserService {
         userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
         return userDao.getAllEventsByUserId(userId);
+    }
+
+    public List<Film> getRecommendations(int userId) {
+        return userDao.getRecommendations(userId);
     }
 }
