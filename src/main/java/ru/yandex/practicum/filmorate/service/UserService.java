@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.EventOperation;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 
@@ -68,6 +67,8 @@ public class UserService {
         User friend = userDao.getById(friendId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
 
+        userDao.addFriend(user, friend);
+
         Event event = Event.builder()
                 .timestamp(Instant.now().toEpochMilli())
                 .userId(userId)
@@ -76,8 +77,6 @@ public class UserService {
                 .entityId(friendId)
                 .build();
         eventDao.create(event);
-
-        userDao.addFriend(user, friend);
     }
 
     public void deleteFriend(int userId, int friendId) {
@@ -85,6 +84,8 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
         User friend = userDao.getById(friendId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
+
+        userDao.deleteFriend(user, friend);
 
         Event event = Event.builder()
                 .timestamp(Instant.now().toEpochMilli())
@@ -94,8 +95,6 @@ public class UserService {
                 .entityId(friendId)
                 .build();
         eventDao.create(event);
-
-        userDao.deleteFriend(user, friend);
     }
 
     public List<User> getFriendsByUserId(int userId) {

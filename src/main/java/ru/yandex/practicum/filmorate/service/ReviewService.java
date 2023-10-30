@@ -5,10 +5,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -18,6 +17,7 @@ public class ReviewService {
     UserDao userDao;
     GenreDao genreDao;
     MpaDao mpaDao;
+    EventDao eventDao;
     ValidateService validateService;
 
     @Autowired
@@ -26,12 +26,14 @@ public class ReviewService {
                          @Qualifier("userDaoImpl") UserDao userDao,
                          @Qualifier("genreDaoImpl") GenreDao genreDao,
                          @Qualifier("mpaDaoImpl") MpaDao mpaDao,
+                         @Qualifier("eventDaoImpl") EventDao eventDao,
                          ValidateService validateService) {
         this.reviewDao = reviewDao;
         this.filmDao = filmDao;
         this.userDao = userDao;
         this.genreDao = genreDao;
         this.mpaDao = mpaDao;
+        this.eventDao = eventDao;
         this.validateService = validateService;
     }
 
@@ -43,7 +45,19 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
         User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        return reviewDao.create(review);
+
+        Review reviewToReturn = reviewDao.create(review);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.REVIEW)
+                .operation(EventOperation.ADD)
+                .entityId(review.getReviewId())
+                .build();
+        eventDao.create(event);
+
+        return reviewToReturn;
     }
 
     public Review updateReview(Review review) {
@@ -54,9 +68,18 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Review not found by id: " + reviewId));
 
         reviewDao.update(review);
-
         reviewToReturn.setContent(review.getContent());
         reviewToReturn.setIsPositive(review.getIsPositive());
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(reviewToReturn.getUserId())
+                .eventType(EventType.REVIEW)
+                .operation(EventOperation.UPDATE)
+                .entityId(reviewId)
+                .build();
+        eventDao.create(event);
+
         return reviewToReturn;
     }
 
@@ -105,5 +128,14 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + reviewId));
 
         reviewDao.deleteById(reviewId);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(review.getUserId())
+                .eventType(EventType.REVIEW)
+                .operation(EventOperation.REMOVE)
+                .entityId(reviewId)
+                .build();
+        eventDao.create(event);
     }
 }

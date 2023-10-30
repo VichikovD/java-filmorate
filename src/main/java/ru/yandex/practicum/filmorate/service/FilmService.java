@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -85,6 +84,8 @@ public class FilmService {
         User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
 
+        filmDao.addLike(film, user);
+
         Event event = Event.builder()
                 .timestamp(Instant.now().toEpochMilli())
                 .userId(userId)
@@ -93,8 +94,6 @@ public class FilmService {
                 .entityId(filmId)
                 .build();
         eventDao.create(event);
-
-        filmDao.addLike(film, user);
     }
 
     public void deleteLike(int filmId, int userId) {
@@ -102,6 +101,8 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
         User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+
+        filmDao.deleteLike(film, user);
 
         Event event = Event.builder()
                 .timestamp(Instant.now().toEpochMilli())
@@ -111,8 +112,6 @@ public class FilmService {
                 .entityId(filmId)
                 .build();
         eventDao.create(event);
-
-        filmDao.deleteLike(film, user);
     }
 
     public List<Film> getAllFilms() {
