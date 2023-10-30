@@ -94,11 +94,11 @@ public class FilmController {
     }
 
 
-    @GetMapping("/director/{directorId}?sortBy=[year,likes]")
+    @GetMapping("/director/{directorId}")
     public List<Film> getDirectorFilms(@PathVariable int directorId,
-                                       @RequestParam(defaultValue = "film_id") String sortParam) {
-        log.info("GET {}, query parameters={}", "\"/films/director/" + directorId + "\"", "{sort=" + sortParam + "}");
-        List<Film> filmsList = filmService.getDirectorFilms(directorId, sortParam);
+                                       @RequestParam(defaultValue = "film_id") String sortBy) {
+        log.info("GET {}, query parameters={}", "\"/films/director/" + directorId + "\"", "{sortBy=" + sortBy + "}");
+        List<Film> filmsList = filmService.getDirectorFilms(directorId, sortBy);
         log.debug(filmsList.toString());
         return filmsList;
     }

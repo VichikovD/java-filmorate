@@ -141,19 +141,18 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> getByDirectorId(Integer id, String sort) {
+    public List<Film> getByDirectorId(Integer id, String sortBy) {
         String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
                 "COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
+                "LEFT OUTER JOIN films_directors AS fd ON f.film_id = fd.film_id " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
-                "WHERE d.director_id = :director_id " +
-                "GROUP BY f.film_id" +
-                "ORDER BY :sort";
+                "WHERE fd.director_id = :director_id " +
+                "GROUP BY f.film_id " +
+                "ORDER BY " + sortBy;
 
-        SqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("director_id", id)
-                .addValue("sort", sort);
+        SqlParameterSource parameters = new MapSqlParameterSource("director_id", id);
 
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 

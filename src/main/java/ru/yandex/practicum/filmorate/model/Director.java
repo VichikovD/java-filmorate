@@ -12,7 +12,7 @@ import java.util.Objects;
 @ToString
 public class Director implements Comparable<Director> {
     Integer id;
-    @NotBlank
+    @NotBlank(message = "Director name can't be null or empty")
     String name;
 
     public Director(Integer id) {

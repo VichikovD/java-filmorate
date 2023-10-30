@@ -125,21 +125,22 @@ public class FilmService {
     }
 
 
-    public List<Film> getDirectorFilms(int directorId, String sortParam) {
-        String sort;
-        switch (sortParam) {
+    public List<Film> getDirectorFilms(int directorId, String sortBy) {
+        directorDao.getById(directorId).orElseThrow(() -> new NotFoundException("Director not found by id: " + directorId));
+        String sortString;
+        switch (sortBy) {
             case "film_id":
-                sort = "f.film_id ASC";
+                sortString = "f.film_id ASC";
                 break;
             case "year":
-                sort = "f.release_date DESC";
+                sortString = "f.release_date ASC";
                 break;
             case "likes":
-                sort = "COUNT(l.user_id) DESC";
+                sortString = "likes_quantity DESC";
                 break;
             default:
-                sort = "f.film_id";
+                sortString = "f.film_id ASC";
         }
-        return filmDao.getByDirectorId(directorId, sort);
+        return filmDao.getByDirectorId(directorId, sortString);
     }
 }
