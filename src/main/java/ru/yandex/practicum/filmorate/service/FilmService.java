@@ -98,7 +98,7 @@ public class FilmService {
         return filmDao.getAll();
     }
 
-    public List<Film> getMostPopularFilms(int count) {
-        return filmDao.getMostPopular(count);
+    public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
+        return filmDao.getMostPopular(count, genreId, year);
     }
 }
