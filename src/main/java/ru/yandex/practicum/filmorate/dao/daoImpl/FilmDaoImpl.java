@@ -94,6 +94,25 @@ public class FilmDaoImpl implements FilmDao {
         }
     }
 
+    public List<Film> getByIds(List<Integer> ids) {
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
+                "FROM films AS f " +
+                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+                "WHERE f.film_id IN :film_ids " +
+                "GROUP BY f.film_id";
+        SqlParameterSource parameters = new MapSqlParameterSource("film_ids", ids);
+        SqlRowSet rsFilms = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
+        List<Film> films = new ArrayList<>();
+        while (rsFilms.next()) {
+            Film film = makeFilm(rsFilms);
+            film.setGenres(getGenreByFilmId(film.getId()));
+            films.add(film);
+        }
+        return films;
+    }
+
     @Override
     public List<Film> getAll() {
         String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -9,10 +10,13 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dao.mapper.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,9 +24,12 @@ import java.util.Optional;
 @Component
 public class UserDaoImpl implements UserDao {
     NamedParameterJdbcOperations namedParameterJdbcTemplate;
+    FilmDao filmDao;
 
-    public UserDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public UserDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+                       @Qualifier("filmDaoImpl") FilmDao filmDao) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.filmDao = filmDao;
     }
 
     @Override
@@ -133,6 +140,22 @@ public class UserDaoImpl implements UserDao {
                 .addValue("other_user_id", otherUser.getId());
 
         return namedParameterJdbcTemplate.query(sqlSelect, parameters, new UserRowMapper());
+    }
+
+    @Override
+    public List<Film> getRecommendations(int userId) {
+        String sqlQuery = "SELECT film_id FROM likes WHERE user_id = "
+                + "(SELECT user_id FROM likes WHERE user_id != :user_id AND film_id IN "
+                + "(SELECT film_id FROM likes WHERE user_id = :user_id) "
+                + "GROUP BY user_id ORDER BY COUNT(film_id) DESC LIMIT 1) "
+                + "AND film_id NOT IN (SELECT film_id FROM likes WHERE user_id = 3);";
+        SqlParameterSource parameters = new MapSqlParameterSource("user_id", userId);
+        SqlRowSet rsFilms = namedParameterJdbcTemplate.queryForRowSet(sqlQuery, parameters);
+        List<Integer> recommendedFilmsIds = new ArrayList<>();
+        while (rsFilms.next()) {
+            recommendedFilmsIds.add(rsFilms.getInt("film_id"));
+        }
+        return filmDao.getByIds(recommendedFilmsIds);
     }
 
     private User makeUser(SqlRowSet rs) {

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -80,5 +81,9 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + otherUserId));
 
         return userDao.getUserCommonFriends(user, otherUser);
+    }
+
+    public List<Film> getUserRecommendations(int userId) {
+        return userDao.getRecommendations(userId);
     }
 }
