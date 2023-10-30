@@ -162,6 +162,29 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
+    public List<Film> getFilmsViaSubstringSearch(String query, List<String> filter) {
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
+                "COUNT(l.user_id) as likes_quantity " +
+                "FROM films AS f " +
+                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT OUTER JOIN films_directors  AS fd ON f.film_id = fd.film_id " +
+                "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
+                "WHERE LOWER(f.film_name) LIKE :title AND LOWER(d.director_name) LIKE :director " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(l.user_id) DESC";
+
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("director", filter.get(0))
+                .addValue("title", filter.get(1));
+        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
+
+        updateGenresToAllFilms(filmList);
+
+        return filmList;
+    }
+
+    @Override
     public List<Film> getCommon(Integer userId, Integer friendId) {
         String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
                 "COUNT(l3.user_id) as likes_quantity " +
@@ -184,7 +207,6 @@ public class FilmDaoImpl implements FilmDao {
         updateDirectorsToAllFilms(filmList);
 
         return filmList;
-
     }
 
     @Override

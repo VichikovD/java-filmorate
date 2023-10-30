@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -128,6 +129,29 @@ public class FilmService {
 
     public List<Film> getAllFilms() {
         return filmDao.getAll();
+    }
+
+    public List<Film> getAllViaSubstringSearch(String query, String filter) {
+        List<String> filterList = new ArrayList<>();
+        switch (filter.toLowerCase()
+                .replaceAll(" ", "")) {
+            case "director":
+                filterList.add(query);
+                filterList.add("%");
+                break;
+            case "title":
+                filterList.add("%");
+                filterList.add(query);
+                break;
+            case "director,title":
+            case "title,director":
+                filterList.add(query);
+                filterList.add(query);
+                break;
+            default:
+                throw new ValidateException("Invalid filer: %s. Filter may have the following values: director, title");
+        }
+        return filmDao.getFilmsViaSubstringSearch(query, filterList);
     }
 
     public List<Film> getMostPopularFilms(int count) {

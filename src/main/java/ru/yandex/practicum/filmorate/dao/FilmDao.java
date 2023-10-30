@@ -13,6 +13,8 @@ public interface FilmDao {
 
     List<Film> getAll();
 
+    List<Film> getFilmsViaSubstringSearch(String query, List<String> filter);
+
     Optional<Film> getById(Integer filmId);
 
     void deleteById(Integer id);
