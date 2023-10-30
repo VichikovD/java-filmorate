@@ -109,9 +109,9 @@ public class FilmController {
                                                @RequestParam(name = "by") @NotBlank String filter) {
         log.info("GET {}, query parameters={}", "\"/films/search\"", "{query=" + query + ", by=" + filter + "}");
 
-        List<Film> Films = filmService.getAllViaSubstringSearch(query, filter);
-        log.debug(Films.toString());
+        List<Film> films = filmService.getAllViaSubstringSearch(query, filter);
+        log.debug(films.toString());
 
-        return Films;
+        return films;
     }
 }
