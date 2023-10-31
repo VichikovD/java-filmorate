@@ -13,27 +13,25 @@ public interface FilmDao {
 
     void update(Film film);
 
-    List<Film> getAll();
-
-    List<Film> getFilmsViaSubstringSearch(HashMap<String, String> searchFilter);
-
     Optional<Film> getById(Integer filmId);
-
-    List<Film> getByIds(List<Integer> filmsIds);
 
     void deleteById(Integer id);
 
-    List<Film> getCommon(Integer userId, Integer friendId);
+    List<Film> getAll();
 
-    List<Film> getMostPopular(Integer count, Integer genreId, Integer year);
+    List<Film> getAllMostPopular(Integer count, Integer genreId, Integer year);
+
+    List<Film> getViaSubstringSearch(HashMap<String, String> searchFilter);
+
+    List<Film> getByDirectorId(Integer directorId, String sortParam);
+
+    List<Film> getCommon(Integer userId, Integer friendId);
 
     void addLike(Film film, User userId);
 
     void deleteLike(Film filmId, User userId);
 
-    List<Film> getByDirectorId(Integer directorId, String sortParam);
+    void updateGenresToAllFilms(Collection<Film> filmCollection);
 
-    public void updateGenresToAllFilms(Collection<Film> filmCollection);
-
-    public void updateDirectorsToAllFilms(Collection<Film> filmCollection);
+    void updateDirectorsToAllFilms(Collection<Film> filmCollection);
 }

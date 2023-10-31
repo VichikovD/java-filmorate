@@ -37,7 +37,7 @@ public class ReviewService {
         this.validateService = validateService;
     }
 
-    public Review createReview(Review review) {
+    public Review create(Review review) {
         int filmId = review.getFilmId();
         int userId = review.getUserId();
 
@@ -60,7 +60,7 @@ public class ReviewService {
         return reviewToReturn;
     }
 
-    public Review updateReview(Review review) {
+    public Review update(Review review) {
         validateService.validateReviewId(review);
         int reviewId = review.getReviewId();
 

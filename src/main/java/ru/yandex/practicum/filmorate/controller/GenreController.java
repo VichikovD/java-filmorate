@@ -26,17 +26,17 @@ public class GenreController {
     }
 
     @GetMapping
-    public Set<Genre> getAllGenres() {
+    public Set<Genre> getAll() {
         log.info("GET \"/films/genres\"");
-        Set<Genre> genreList = genreService.getAllGenres();
+        Set<Genre> genreList = genreService.getAll();
         log.debug(genreList.toString());
         return genreList;
     }
 
     @GetMapping("/{id}")
-    public Genre getGenresById(@PathVariable @Min(value = 1) int id) {
+    public Genre getById(@PathVariable @Min(value = 1) int id) {
         log.info("GET \"/genres/" + id + "\"");
-        Genre genre = genreService.getGenreByGenreId(id);
+        Genre genre = genreService.getById(id);
         log.debug(genre.toString());
         return genre;
     }

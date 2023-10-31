@@ -26,16 +26,17 @@ public class UserService {
         this.eventDao = eventDao;
     }
 
-    public User createUser(User user) {
+    public User create(User user) {
         if (user.isEmptyName()) {
             user.setLoginAsName();
         }
         return userDao.create(user);
     }
 
-    public User updateUser(User user) {
+    public User update(User user) {
         validateService.validateUserId(user);
         int userId = user.getId();
+
         userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
         if (user.isEmptyName()) {
@@ -45,7 +46,7 @@ public class UserService {
         return user;
     }
 
-    public User getUserById(int userId) {
+    public User getById(int userId) {
         return userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
     }
@@ -54,7 +55,7 @@ public class UserService {
         userDao.deleteById(id);
     }
 
-    public List<User> getAllUsers() {
+    public List<User> getAll() {
         return userDao.getAll();
     }
 
@@ -94,28 +95,28 @@ public class UserService {
         eventDao.create(event);
     }
 
-    public List<User> getFriendsByUserId(int userId) {
+    public List<User> getFriendsById(int userId) {
         userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        return userDao.getFriendsListById(userId);
+        return userDao.getFriendsById(userId);
     }
 
-    public List<User> getUserCommonFriends(int userId, int otherUserId) {
+    public List<User> getCommonFriends(int userId, int otherUserId) {
         User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
         User otherUser = userDao.getById(otherUserId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + otherUserId));
 
-        return userDao.getUserCommonFriends(user, otherUser);
+        return userDao.getCommonFriends(user, otherUser);
     }
 
-    public List<Event> getAllEventsByUserId(Integer userId) {
+    public List<Event> getEventsById(Integer userId) {
         userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        return userDao.getAllEventsByUserId(userId);
+        return userDao.getEventsById(userId);
     }
 
-    public List<Film> getRecommendations(int userId) {
-        return userDao.getRecommendations(userId);
+    public List<Film> getRecommendationsById(int userId) {
+        return userDao.getRecommendationsById(userId);
     }
 }

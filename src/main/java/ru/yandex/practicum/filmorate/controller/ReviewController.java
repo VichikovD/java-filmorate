@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -22,6 +23,7 @@ public class ReviewController {
     FilmService filmService;
     UserService userService;
 
+    @Autowired
     public ReviewController(FilmService filmService, UserService userService, ReviewService reviewService) {
         this.filmService = filmService;
         this.userService = userService;
@@ -29,23 +31,23 @@ public class ReviewController {
     }
 
     @PostMapping
-    public Review createReview(@RequestBody @Valid Review review) {
+    public Review create(@RequestBody @Valid Review review) {
         log.info("POST {}, body={}", "\"/reviews\"", review);
-        Review reviewToReturn = reviewService.createReview(review);
+        Review reviewToReturn = reviewService.create(review);
         log.debug(reviewToReturn.toString());
         return reviewToReturn;
     }
 
     @PutMapping
-    public Review updateReview(@RequestBody @Valid Review review) {
+    public Review update(@RequestBody @Valid Review review) {
         log.info("PUT {}, body={}", "\"/reviews\"", review);
-        Review reviewToReturn = reviewService.updateReview(review);
+        Review reviewToReturn = reviewService.update(review);
         log.debug(reviewToReturn.toString());
         return reviewToReturn;
     }
 
     @GetMapping("/{id}")
-    public Review getReviewById(@PathVariable("id") int id) {
+    public Review getById(@PathVariable("id") int id) {
         log.info("GET \"/reviews/" + id + "\"");
         Review reviewToReturn = reviewService.getById(id);
         log.debug(reviewToReturn.toString());
@@ -53,8 +55,8 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<Review> getReviewsByFilmIdOrGetAll(@RequestParam(required = false) Integer filmId,
-                                                   @RequestParam(defaultValue = "10") @Min(value = 1) int count) {
+    public List<Review> getByFilmIdOrGetAll(@RequestParam(required = false) Integer filmId,
+                                            @RequestParam(defaultValue = "10") @Min(value = 1) int count) {
         log.info("GET {}, query parameters={}, {}", "\"/reviews\"", "{id=" + filmId + "}", "{count=" + count + "}");
         List<Review> reviewList = new ArrayList<>();
 
@@ -69,7 +71,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteReview(@PathVariable int id) {
+    public void delete(@PathVariable int id) {
         log.info("DELETE \"/reviews/" + id + "\"");
         reviewService.deleteById(id);
     }

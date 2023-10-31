@@ -86,18 +86,18 @@ public class UserDaoTest {
     public void testGetFriendsUsersListById() {
         User user1 = userDao.create(data.getUser(0));
         User user2 = userDao.create(data.getUser(1));
-        List<User> user1NoFriends = userDao.getFriendsListById(user1.getId());
+        List<User> user1NoFriends = userDao.getFriendsById(user1.getId());
         userDao.addFriend(user1, user2);
-        List<User> user1HasFriendUser2 = userDao.getFriendsListById(user1.getId());
-        List<User> user2NoFriends = userDao.getFriendsListById(user2.getId());
+        List<User> user1HasFriendUser2 = userDao.getFriendsById(user1.getId());
+        List<User> user2NoFriends = userDao.getFriendsById(user2.getId());
 
         assertEquals(new ArrayList<User>(), user1NoFriends);
         assertEquals(List.of(user2), user1HasFriendUser2);
         assertEquals(new ArrayList<User>(), user2NoFriends);
 
         userDao.deleteFriend(user1, user2);
-        List<User> user1DeletedFriendUser2 = userDao.getFriendsListById(user1.getId());
-        List<User> user2StillNoFriends = userDao.getFriendsListById(user2.getId());
+        List<User> user1DeletedFriendUser2 = userDao.getFriendsById(user1.getId());
+        List<User> user2StillNoFriends = userDao.getFriendsById(user2.getId());
 
         assertEquals(new ArrayList<User>(), user1DeletedFriendUser2);
         assertEquals(new ArrayList<User>(), user2StillNoFriends);

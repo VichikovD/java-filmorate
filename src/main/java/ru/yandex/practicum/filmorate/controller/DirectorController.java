@@ -24,41 +24,41 @@ public class DirectorController {
     }
 
     @PostMapping
-    public Director createDirector(@RequestBody @Valid Director director) {
+    public Director create(@RequestBody @Valid Director director) {
         log.info("POST {}, body={}", "\"/directors\"", director);
-        Director directorToReturn = directorService.createDirector(director);
+        Director directorToReturn = directorService.create(director);
         log.debug(directorToReturn.toString());
         return directorToReturn;
     }
 
     @PutMapping
-    public Director updateDirector(@RequestBody @Valid Director director) {
+    public Director update(@RequestBody @Valid Director director) {
         log.info("PUT {}, body={}", "\"/directors\"", director);
-        Director directorToReturn = directorService.updateDirector(director);
+        Director directorToReturn = directorService.update(director);
         log.debug(directorToReturn.toString());
         return directorToReturn;
     }
 
     @GetMapping("/{id}")
-    public Director getDirectorById(@PathVariable int id) {
+    public Director getById(@PathVariable int id) {
         log.info("GET {}", "\"/directors/" + id + "\"");
-        Director directorToReturn = directorService.getDirectorById(id);
+        Director directorToReturn = directorService.getById(id);
         log.debug(directorToReturn.toString());
         return directorToReturn;
     }
 
     @GetMapping
-    public List<Director> getAllDirectors() {
+    public List<Director> getAll() {
         log.info("GET {}", "\"/directors\"");
-        List<Director> directorList = directorService.getAllDirectors();
+        List<Director> directorList = directorService.getAll();
         log.debug(directorList.toString());
         return directorList;
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDirectorById(@PathVariable int id) {
+    public void deleteById(@PathVariable int id) {
         log.info("GET {}", "\"/directors/" + id + "\"");
-        Director directorToReturn = directorService.deleteDirectorById(id);
+        Director directorToReturn = directorService.deleteById(id);
         log.debug(directorToReturn.toString());
     }
 }

@@ -40,7 +40,7 @@ public class FilmService {
         this.validateService = validateService;
     }
 
-    public Film createFilm(Film film) {
+    public Film create(Film film) {
         int mpaId = film.getMpa().getId();
         mpaDao.getById(mpaId)
                 .orElseThrow(() -> new NotFoundException("Mpa not found by id: " + mpaId));
@@ -59,7 +59,7 @@ public class FilmService {
         }
     }
 
-    public Film updateFilm(Film film) {
+    public Film update(Film film) {
         validateService.validateFilmId(film);
         int filmId = film.getId();
         int mpaId = film.getMpa().getId();
@@ -83,13 +83,76 @@ public class FilmService {
         }
     }
 
-    public Film getFilmById(int filmId) {
+    public Film getById(int filmId) {
         return filmDao.getById(filmId)
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
     }
 
     public void deleteById(Integer id) {
         filmDao.deleteById(id);
+    }
+
+    public List<Film> getAll() {
+        return filmDao.getAll();
+    }
+
+    public List<Film> getAllMostPopular(int count, Integer genreId, Integer year) {
+        return filmDao.getAllMostPopular(count, genreId, year);
+    }
+
+    public List<Film> getViaSubstringSearch(String query, String filter) {
+        HashMap<String, String> filterMap = new HashMap<>();
+        String correctedFilter = filter.toLowerCase()
+                .replaceAll(" ", "");
+        String correctedQuery = query.toLowerCase()
+                .replaceAll(";", "");
+
+        switch (correctedFilter) {
+            case "director":
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "NULL");
+                break;
+            case "title":
+                filterMap.put("director", "NULL");
+                filterMap.put("title", "%" + correctedQuery + "%");
+                break;
+            case "director,title":
+            case "title,director":
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "%" + correctedQuery + "%");
+                break;
+            default:
+                throw new ValidateException("Invalid filer: %s. Filter may have the following values: director, title");
+        }
+        return filmDao.getViaSubstringSearch(filterMap);
+    }
+
+    public List<Film> getByDirectorId(int directorId, String sortBy) {
+        directorDao.getById(directorId).orElseThrow(() -> new NotFoundException("Director not found by id: " + directorId));
+        String sortString;
+        switch (sortBy) {
+            case "film_id":
+                sortString = "f.film_id ASC";
+                break;
+            case "year":
+                sortString = "f.release_date ASC";
+                break;
+            case "likes":
+                sortString = "likes_quantity DESC";
+                break;
+            default:
+                sortString = "f.film_id ASC";
+        }
+        return filmDao.getByDirectorId(directorId, sortString);
+    }
+
+    public List<Film> getCommon(Integer userId, Integer friendId) {
+        userDao.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        userDao.getById(friendId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+
+        return filmDao.getCommon(userId, friendId);
     }
 
     public void addLike(Integer filmId, Integer userId) {
@@ -126,69 +189,5 @@ public class FilmService {
                 .entityId(filmId)
                 .build();
         eventDao.create(event);
-    }
-
-    public List<Film> getAllFilms() {
-        return filmDao.getAll();
-    }
-
-    public List<Film> getAllViaSubstringSearch(String query, String filter) {
-        HashMap<String, String> filterMap = new HashMap<>();
-        String correctedFilter = filter.toLowerCase()
-                .replaceAll(" ", "");
-        String correctedQuery = query.toLowerCase()
-                .replaceAll(";", "");
-
-        switch (correctedFilter) {
-            case "director":
-                filterMap.put("director", "%" + correctedQuery + "%");
-                filterMap.put("title", "NULL");
-                break;
-            case "title":
-                filterMap.put("director", "NULL");
-                filterMap.put("title", "%" + correctedQuery + "%");
-                break;
-            case "director,title":
-            case "title,director":
-                filterMap.put("director", "%" + correctedQuery + "%");
-                filterMap.put("title", "%" + correctedQuery + "%");
-                break;
-            default:
-                throw new ValidateException("Invalid filer: %s. Filter may have the following values: director, title");
-        }
-        return filmDao.getFilmsViaSubstringSearch(filterMap);
-    }
-
-    public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
-        return filmDao.getMostPopular(count, genreId, year);
-    }
-
-    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        userDao.getById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        userDao.getById(friendId)
-                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-
-        return filmDao.getCommon(userId, friendId);
-    }
-
-
-    public List<Film> getDirectorFilms(int directorId, String sortBy) {
-        directorDao.getById(directorId).orElseThrow(() -> new NotFoundException("Director not found by id: " + directorId));
-        String sortString;
-        switch (sortBy) {
-            case "film_id":
-                sortString = "f.film_id ASC";
-                break;
-            case "year":
-                sortString = "f.release_date ASC";
-                break;
-            case "likes":
-                sortString = "likes_quantity DESC";
-                break;
-            default:
-                sortString = "f.film_id ASC";
-        }
-        return filmDao.getByDirectorId(directorId, sortString);
     }
 }

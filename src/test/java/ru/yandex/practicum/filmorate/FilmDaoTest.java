@@ -107,13 +107,13 @@ public class FilmDaoTest {
     public void testGetMostPopularFilms() {
         Film film1 = filmDao.create(data.getFilm(0));
         Film film2 = filmDao.create(data.getFilm(1));
-        List<Film> popularFilms = filmDao.getMostPopular(10, null, null);
+        List<Film> popularFilms = filmDao.getAllMostPopular(10, null, null);
         User user = userDao.create(data.getUser(0));
 
         assertEquals(List.of(film1, film2), popularFilms);
 
         filmDao.addLike(film2, user);
-        List<Film> likedFilmsToTop = filmDao.getMostPopular(10, null, null);
+        List<Film> likedFilmsToTop = filmDao.getAllMostPopular(10, null, null);
         Film film2WithLike = filmDao.getById(film2.getId()).get();
 
         assertEquals(List.of(film2WithLike, film1), likedFilmsToTop);

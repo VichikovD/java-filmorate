@@ -9,6 +9,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
+@Builder
 public class Mpa {
     Integer id;
     String name;

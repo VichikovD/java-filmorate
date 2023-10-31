@@ -17,11 +17,11 @@ public class GenreService {
         this.genreDao = genreDao;
     }
 
-    public Set<Genre> getAllGenres() {
+    public Set<Genre> getAll() {
         return genreDao.getAll();
     }
 
-    public Genre getGenreByGenreId(int genreId) {
+    public Genre getById(int genreId) {
         return genreDao.getById(genreId)
                 .orElseThrow(() -> new NotFoundException("Genre not found by id: " + genreId));
     }

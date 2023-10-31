@@ -7,7 +7,7 @@ import java.util.Set;
 
 
 public interface GenreDao {
-    public Optional<Genre> getById(int genreId);
+    Optional<Genre> getById(int genreId);
 
-    public Set<Genre> getAll();
+    Set<Genre> getAll();
 }
