@@ -27,6 +27,12 @@ import java.util.stream.Collectors;
 public class FilmDaoImpl implements FilmDao {
     NamedParameterJdbcOperations namedParameterJdbcTemplate;
 
+    private final static String SELECT_FILMS = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+            "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
+            "FROM films AS f " +
+            "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+            "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id ";
+
     public FilmDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
@@ -75,11 +81,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Optional<Film> getById(Integer filmId) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
-                "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+        String sqlSelect = SELECT_FILMS +
                 "WHERE f.film_id = :film_id " +
                 "GROUP BY f.film_id";
         SqlParameterSource parameters = new MapSqlParameterSource("film_id", filmId);
@@ -97,11 +99,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getByIds(List<Integer> filmsIds) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
-                "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+        String sqlSelect = SELECT_FILMS +
                 "WHERE f.film_id IN (:films_ids) " +
                 "GROUP BY f.film_id";
         SqlParameterSource parameters = new MapSqlParameterSource("films_ids", filmsIds);
@@ -127,11 +125,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getAll() {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
-                "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+        String sqlSelect = SELECT_FILMS +
                 "GROUP BY f.film_id";
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, new FilmRowMapper());
 
@@ -142,11 +136,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) AS likes_quantity " +
-                "FROM films AS f " +
-                "LEFT JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+        String sqlSelect = SELECT_FILMS +
                 "LEFT JOIN films_genres AS fg ON f.film_id = fg.film_id " +
                 "WHERE (:genreId IS NULL OR fg.genre_id = :genreId) " +
                 "AND (:year IS NULL OR YEAR(f.release_date) = :year) " +
@@ -168,12 +158,8 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getByDirectorId(Integer id, String sortBy) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
-                "FROM films AS f " +
+        String sqlSelect = SELECT_FILMS +
                 "LEFT OUTER JOIN films_directors AS fd ON f.film_id = fd.film_id " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
                 "WHERE fd.director_id = :director_id " +
                 "GROUP BY f.film_id " +
                 "ORDER BY " + sortBy;
@@ -189,11 +175,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getFilmsViaSubstringSearch(HashMap<String, String> searchFilter) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
-                "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+        String sqlSelect = SELECT_FILMS +
                 "LEFT OUTER JOIN films_directors  AS fd ON f.film_id = fd.film_id " +
                 "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
                 "WHERE LOWER(f.film_name) LIKE :title OR LOWER(d.director_name) LIKE :director " +
