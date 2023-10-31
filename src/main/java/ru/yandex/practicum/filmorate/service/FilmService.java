@@ -5,11 +5,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -21,18 +19,21 @@ public class FilmService {
     MpaDao mpaDao;
     DirectorDao directorDao;
     ValidateService validateService;
+    EventDao eventDao;
 
     @Autowired
     public FilmService(@Qualifier("filmDaoImpl") FilmDao filmDao,
                        @Qualifier("userDaoImpl") UserDao userDao,
                        @Qualifier("genreDaoImpl") GenreDao genreDao,
                        @Qualifier("mpaDaoImpl") MpaDao mpaDao,
+                       @Qualifier("eventDaoImpl") EventDao eventDao,
                        @Qualifier("directorDaoImpl") DirectorDao directorDao,
                        ValidateService validateService) {
         this.filmDao = filmDao;
         this.userDao = userDao;
         this.genreDao = genreDao;
         this.mpaDao = mpaDao;
+        this.eventDao = eventDao;
         this.directorDao = directorDao;
         this.validateService = validateService;
     }
@@ -96,6 +97,15 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
 
         filmDao.addLike(film, user);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(EventOperation.ADD)
+                .entityId(filmId)
+                .build();
+        eventDao.create(event);
     }
 
     public void deleteLike(int filmId, int userId) {
@@ -105,6 +115,15 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
 
         filmDao.deleteLike(film, user);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(EventOperation.REMOVE)
+                .entityId(filmId)
+                .build();
+        eventDao.create(event);
     }
 
     public List<Film> getAllFilms() {
