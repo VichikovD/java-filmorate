@@ -15,11 +15,10 @@ import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dao.mapper.EventRowMapper;
 import ru.yandex.practicum.filmorate.dao.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mapper.UserRowMapper;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -165,17 +164,17 @@ public class UserDaoImpl implements UserDao {
                 "LEFT OUTER JOIN films AS f ON l.film_id = f.film_id " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "WHERE l.user_id = " +
-                     "(SELECT l2.user_id " +
-                     "FROM likes AS l1 " +
-                     "INNER JOIN likes AS l2 ON l1.film_id = l2.film_id " +
-                     "WHERE l1.user_id = :user_id AND l2.user_id != :user_id " +
-                     "GROUP BY l2.user_id " +
-                     "ORDER BY COUNT(l2.user_id) DESC " +
-                     "LIMIT 1) " +
+                "(SELECT l2.user_id " +
+                "FROM likes AS l1 " +
+                "INNER JOIN likes AS l2 ON l1.film_id = l2.film_id " +
+                "WHERE l1.user_id = :user_id AND l2.user_id != :user_id " +
+                "GROUP BY l2.user_id " +
+                "ORDER BY COUNT(l2.user_id) DESC " +
+                "LIMIT 1) " +
                 "AND l.film_id NOT IN " +
-                    "(SELECT film_id " +
-                    "FROM likes " +
-                    "WHERE user_id = :user_id) " +
+                "(SELECT film_id " +
+                "FROM likes " +
+                "WHERE user_id = :user_id) " +
                 "GROUP BY f.film_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("user_id", userId);
