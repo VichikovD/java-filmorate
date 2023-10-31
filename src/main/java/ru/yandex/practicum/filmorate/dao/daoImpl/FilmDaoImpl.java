@@ -343,7 +343,7 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     // для getAll() и getMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
-    private void updateGenresToAllFilms(Collection<Film> filmCollection) {
+    public void updateGenresToAllFilms(Collection<Film> filmCollection) {
         Map<Integer, Film> filmMap = filmCollection.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
         Collection<Integer> idList = filmMap.keySet();
@@ -361,7 +361,7 @@ public class FilmDaoImpl implements FilmDao {
         });
     }
 
-    private void updateDirectorsToAllFilms(Collection<Film> filmCollection) {
+    public void updateDirectorsToAllFilms(Collection<Film> filmCollection) {
         Map<Integer, Film> filmMap = filmCollection.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
         Collection<Integer> idList = filmMap.keySet();
