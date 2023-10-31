@@ -128,7 +128,6 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + reviewId));
 
         reviewDao.deleteById(reviewId);
-
         Event event = Event.builder()
                 .timestamp(Instant.now().toEpochMilli())
                 .userId(review.getUserId())
