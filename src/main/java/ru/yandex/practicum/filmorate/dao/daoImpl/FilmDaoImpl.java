@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.ResultSetWrappingSqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
@@ -76,8 +75,8 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Optional<Film> getById(Integer filmId) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
@@ -106,11 +105,10 @@ public class FilmDaoImpl implements FilmDao {
         namedParameterJdbcTemplate.update(sqlDelete, parameters);
     }
 
-
     @Override
     public List<Film> getAll() {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
@@ -125,43 +123,23 @@ public class FilmDaoImpl implements FilmDao {
     @Override
     public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) AS likes_quantity, d.director_id, d.director_name " +
+                "m.mpa_name, COUNT(l.user_id) AS likes_quantity " +
                 "FROM films AS f " +
                 "LEFT JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
                 "LEFT JOIN films_genres AS fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN films_directors fd ON f.film_id = fd.film_id " +
-                "LEFT JOIN directors d ON fd.director_id = d.director_id " +
                 "WHERE (:genreId IS NULL OR fg.genre_id = :genreId) " +
                 "AND (:year IS NULL OR YEAR(f.release_date) = :year) " +
                 "GROUP BY f.film_id " +
                 "ORDER BY likes_quantity DESC " +
                 "LIMIT :limit";
 
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("limit", count);
-        parameters.addValue("genreId", genreId);
-        parameters.addValue("year", year);
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("limit", count)
+                .addValue("genreId", genreId)
+                .addValue("year", year);
 
-        Map<Integer, Film> filmMap = new LinkedHashMap<>();
-
-        namedParameterJdbcTemplate.query(sqlSelect, parameters, (rs) -> {
-            while (rs.next()) {
-                int filmId = rs.getInt("film_id");
-
-                if (!filmMap.containsKey(filmId)) {
-                    Film film = makeFilm(new ResultSetWrappingSqlRowSet(rs));
-                    filmMap.put(filmId, film);
-                }
-                if (rs.getObject("director_id") != null) {
-                    Director director = new Director(rs.getInt("director_id"), rs.getString("director_name"));
-                    filmMap.get(filmId).getDirectors().add(director);
-                }
-            }
-            return null;
-        });
-
-        List<Film> filmList = new ArrayList<>(filmMap.values());
+        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
         updateGenresToAllFilms(filmList);
         updateDirectorsToAllFilms(filmList);
@@ -319,8 +297,6 @@ public class FilmDaoImpl implements FilmDao {
                         return directorList.size();
                     }
                 });
-
-
     }
 
     // для getAll() и getMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
