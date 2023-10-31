@@ -75,8 +75,8 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Optional<Film> getById(Integer filmId) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
@@ -105,11 +105,10 @@ public class FilmDaoImpl implements FilmDao {
         namedParameterJdbcTemplate.update(sqlDelete, parameters);
     }
 
-
     @Override
     public List<Film> getAll() {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
                 "FROM films AS f " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
@@ -122,17 +121,24 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> getMostPopular(Integer count) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
+    public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+                "m.mpa_name, COUNT(l.user_id) AS likes_quantity " +
                 "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                "LEFT JOIN films_genres AS fg ON f.film_id = fg.film_id " +
+                "WHERE (:genreId IS NULL OR fg.genre_id = :genreId) " +
+                "AND (:year IS NULL OR YEAR(f.release_date) = :year) " +
                 "GROUP BY f.film_id " +
-                "ORDER BY COUNT(l.user_id) DESC " +
+                "ORDER BY likes_quantity DESC " +
                 "LIMIT :limit";
 
-        SqlParameterSource parameters = new MapSqlParameterSource("limit", count);
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("limit", count)
+                .addValue("genreId", genreId)
+                .addValue("year", year);
+
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
         updateGenresToAllFilms(filmList);
@@ -314,8 +320,6 @@ public class FilmDaoImpl implements FilmDao {
                         return directorList.size();
                     }
                 });
-
-
     }
 
     // для getAll() и getMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
@@ -387,3 +391,4 @@ public class FilmDaoImpl implements FilmDao {
                 .build();
     }
 }
+

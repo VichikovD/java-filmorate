@@ -22,7 +22,7 @@ public interface FilmDao {
 
     List<Film> getCommon(Integer userId, Integer friendId);
 
-    public List<Film> getMostPopular(Integer count);
+    List<Film> getMostPopular(Integer count, Integer genreId, Integer year);
 
     void addLike(Film film, User userId);
 
