@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Slf4j
@@ -101,5 +102,16 @@ public class FilmController {
         List<Film> filmsList = filmService.getDirectorFilms(directorId, sortBy);
         log.debug(filmsList.toString());
         return filmsList;
+    }
+
+    @GetMapping("/search")
+    public List<Film> getAllViaSubstringSearch(@RequestParam @NotBlank String query,
+                                               @RequestParam(name = "by") @NotBlank String filter) {
+        log.info("GET {}, query parameters={}", "\"/films/search\"", "{query=" + query + ", by=" + filter + "}");
+
+        List<Film> films = filmService.getAllViaSubstringSearch(query, filter);
+        log.debug(films.toString());
+
+        return films;
     }
 }
