@@ -3,15 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmDao;
-import ru.yandex.practicum.filmorate.dao.GenreDao;
-import ru.yandex.practicum.filmorate.dao.MpaDao;
-import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -21,31 +17,41 @@ public class FilmService {
     UserDao userDao;
     GenreDao genreDao;
     MpaDao mpaDao;
+    DirectorDao directorDao;
     ValidateService validateService;
+    EventDao eventDao;
 
     @Autowired
     public FilmService(@Qualifier("filmDaoImpl") FilmDao filmDao,
                        @Qualifier("userDaoImpl") UserDao userDao,
                        @Qualifier("genreDaoImpl") GenreDao genreDao,
                        @Qualifier("mpaDaoImpl") MpaDao mpaDao,
+                       @Qualifier("eventDaoImpl") EventDao eventDao,
+                       @Qualifier("directorDaoImpl") DirectorDao directorDao,
                        ValidateService validateService) {
         this.filmDao = filmDao;
         this.userDao = userDao;
         this.genreDao = genreDao;
         this.mpaDao = mpaDao;
+        this.eventDao = eventDao;
+        this.directorDao = directorDao;
         this.validateService = validateService;
     }
 
     public Film createFilm(Film film) {
-        System.out.println(film.getGenres());
         int mpaId = film.getMpa().getId();
         mpaDao.getById(mpaId)
                 .orElseThrow(() -> new NotFoundException("Mpa not found by id: " + mpaId));
 
         Set<Genre> filmGenres = film.getGenres();
+        Set<Director> filmDirectors = film.getDirectors();
+
         if (filmGenres != null
                 && !genreDao.getAll().containsAll(filmGenres)) {
             throw new NotFoundException("Genres id not found. Please check available genre id via GET /genre ");
+        } else if (filmDirectors != null
+                && !directorDao.getAll().containsAll(filmDirectors)) {
+            throw new NotFoundException("Directors id not found. Please check available director id via GET /director ");
         } else {
             return filmDao.create(film);
         }
@@ -56,6 +62,7 @@ public class FilmService {
         int filmId = film.getId();
         int mpaId = film.getMpa().getId();
         Set<Genre> filmGenres = film.getGenres();
+        Set<Director> filmDirectors = film.getDirectors();
 
         filmDao.getById(filmId)
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
@@ -65,6 +72,9 @@ public class FilmService {
         if (filmGenres != null
                 && !genreDao.getAll().containsAll(filmGenres)) {
             throw new NotFoundException("Genres id not found. Please check available genre id via GET /genre ");
+        } else if (filmDirectors != null
+                && !directorDao.getAll().containsAll(filmDirectors)) {
+            throw new NotFoundException("Directors id not found. Please check available director id via GET /director ");
         } else {
             filmDao.update(film);
             return film;
@@ -76,6 +86,10 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
     }
 
+    public void deleteById(Integer id) {
+        filmDao.deleteById(id);
+    }
+
     public void addLike(Integer filmId, Integer userId) {
         Film film = filmDao.getById(filmId)
                 .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
@@ -83,6 +97,15 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
 
         filmDao.addLike(film, user);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(EventOperation.ADD)
+                .entityId(filmId)
+                .build();
+        eventDao.create(event);
     }
 
     public void deleteLike(int filmId, int userId) {
@@ -92,6 +115,15 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
 
         filmDao.deleteLike(film, user);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(EventOperation.REMOVE)
+                .entityId(filmId)
+                .build();
+        eventDao.create(event);
     }
 
     public List<Film> getAllFilms() {
@@ -100,5 +132,34 @@ public class FilmService {
 
     public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
         return filmDao.getMostPopular(count, genreId, year);
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        userDao.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        userDao.getById(friendId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+
+        return filmDao.getCommon(userId, friendId);
+    }
+
+
+    public List<Film> getDirectorFilms(int directorId, String sortBy) {
+        directorDao.getById(directorId).orElseThrow(() -> new NotFoundException("Director not found by id: " + directorId));
+        String sortString;
+        switch (sortBy) {
+            case "film_id":
+                sortString = "f.film_id ASC";
+                break;
+            case "year":
+                sortString = "f.release_date ASC";
+                break;
+            case "likes":
+                sortString = "likes_quantity DESC";
+                break;
+            default:
+                sortString = "f.film_id ASC";
+        }
+        return filmDao.getByDirectorId(directorId, sortString);
     }
 }

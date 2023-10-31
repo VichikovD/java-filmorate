@@ -9,10 +9,9 @@ import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.ValidateService;
 
-import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 
 @Slf4j
 @Component
@@ -29,12 +28,11 @@ public class GenreDaoImpl implements GenreDao {
 
     @Override
     public Set<Genre> getAll() {
-        // почему-то в итоге не возвращает сортированный через "ORDER BY genre_id DESC"
         String sql = "SELECT genre_id, genre_name " +
-                "FROM genres";
-        Set<Genre> sorteSet = new TreeSet<>(Comparator.comparing(Genre::getId));
-        sorteSet.addAll(jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(new ResultSetWrappingSqlRowSet(rs))));
-        return sorteSet;
+                "FROM genres " +
+                "ORDER BY genre_id";
+
+        return new LinkedHashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(new ResultSetWrappingSqlRowSet(rs))));
     }
 
     @Override

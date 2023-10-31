@@ -10,7 +10,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.dao.mapper.EventRowMapper;
 import ru.yandex.practicum.filmorate.dao.mapper.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -81,6 +83,17 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    public void deleteById(Integer id) {
+        String sqlDelete = "DELETE FROM users " +
+                "WHERE user_id = :user_id ";
+
+        SqlParameterSource parameters = new MapSqlParameterSource("user_id", id);
+
+        namedParameterJdbcTemplate.update(sqlDelete, parameters);
+    }
+
+
+    @Override
     public void addFriend(User user, User friend) {
         String sqlInsert = "MERGE INTO friends AS f " +
                 "USING VALUES (:user_id, :friend_id) AS source(user_id, friend_id) " +
@@ -133,6 +146,18 @@ public class UserDaoImpl implements UserDao {
                 .addValue("other_user_id", otherUser.getId());
 
         return namedParameterJdbcTemplate.query(sqlSelect, parameters, new UserRowMapper());
+    }
+
+
+    @Override
+    public List<Event> getAllEventsByUserId(Integer userId) {
+        String sqlSelect = "SELECT event_id, user_id, event_type, operation, timestamp, entity_id " +
+                "FROM events " +
+                "WHERE user_id = :userId";
+
+        SqlParameterSource parameters = new MapSqlParameterSource("userId", userId);
+
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, new EventRowMapper());
     }
 
     private User makeUser(SqlRowSet rs) {

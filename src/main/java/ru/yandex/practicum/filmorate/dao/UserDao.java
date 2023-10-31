@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public interface UserDao {
 
     public Optional<User> getById(int userId);
 
+    void deleteById(Integer id);
+
     public void addFriend(User user, User friend);
 
     public void deleteFriend(User user, User friend);
@@ -21,4 +24,6 @@ public interface UserDao {
     public List<User> getFriendsListById(int userId);
 
     public List<User> getUserCommonFriends(User user, User otherUser);
+
+    public List<Event> getAllEventsByUserId(Integer userId);
 }

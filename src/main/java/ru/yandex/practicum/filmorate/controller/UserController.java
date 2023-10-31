@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -44,6 +45,12 @@ public class UserController {
         return userToReturn;
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteUserById(@PathVariable("id") Integer id) {
+        log.info("DELETE \"/users/" + id + "\"");
+        userService.deleteById(id);
+    }
+
     @GetMapping
     public List<User> getAllUsers() {
         log.info("GET {}", "\"/users\"");
@@ -81,5 +88,13 @@ public class UserController {
         List<User> usersList = userService.getUserCommonFriends(id, otherId);
         log.debug(usersList.toString());
         return usersList;
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getFeed(@PathVariable int id) {
+        log.info("GET {}", "\"/users/" + id + "/feed/\"");
+        List<Event> eventsList = userService.getAllEventsByUserId(id);
+        log.debug(eventsList.toString());
+        return eventsList;
     }
 }
