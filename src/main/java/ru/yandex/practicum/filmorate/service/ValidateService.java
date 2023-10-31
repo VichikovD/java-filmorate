@@ -36,7 +36,7 @@ public class ValidateService {
 
     public void validateReviewId(Review review) {
         if (review.getReviewId() == null) {
-            throw new InvalidIdException("reviewId should not be empty");
+            throw new InvalidIdException("Id should not be empty");
         }
     }
 }

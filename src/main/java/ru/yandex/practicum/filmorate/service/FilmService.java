@@ -5,11 +5,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidateException;
+import java.util.HashMap;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class FilmService {
@@ -128,6 +129,33 @@ public class FilmService {
 
     public List<Film> getAllFilms() {
         return filmDao.getAll();
+    }
+
+    public List<Film> getAllViaSubstringSearch(String query, String filter) {
+        HashMap<String, String> filterMap = new HashMap<>();
+        String correctedFilter = filter.toLowerCase()
+                .replaceAll(" ", "");
+        String correctedQuery = query.toLowerCase()
+                .replaceAll(";", "");
+
+        switch (correctedFilter) {
+            case "director":
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "NULL");
+                break;
+            case "title":
+                filterMap.put("director", "NULL");
+                filterMap.put("title", "%" + correctedQuery + "%");
+                break;
+            case "director,title":
+            case "title,director":
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "%" + correctedQuery + "%");
+                break;
+            default:
+                throw new ValidateException("Invalid filer: %s. Filter may have the following values: director, title");
+        }
+        return filmDao.getFilmsViaSubstringSearch(filterMap);
     }
 
     public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
