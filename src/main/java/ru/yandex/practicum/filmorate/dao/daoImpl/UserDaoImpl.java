@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -9,10 +10,13 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dao.mapper.EventRowMapper;
+import ru.yandex.practicum.filmorate.dao.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -23,8 +27,12 @@ import java.util.Optional;
 public class UserDaoImpl implements UserDao {
     NamedParameterJdbcOperations namedParameterJdbcTemplate;
 
-    public UserDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    FilmDao filmDao;
+
+    public UserDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+                       @Qualifier("filmDaoImpl") FilmDao filmDao) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.filmDao = filmDao;
     }
 
     @Override
@@ -146,6 +154,36 @@ public class UserDaoImpl implements UserDao {
                 .addValue("other_user_id", otherUser.getId());
 
         return namedParameterJdbcTemplate.query(sqlSelect, parameters, new UserRowMapper());
+    }
+
+    @Override
+    public List<Film> getRecommendations(int userId) {
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
+                "COUNT(l.user_id) as likes_quantity " +
+                "FROM likes AS l " +
+                "LEFT OUTER JOIN films AS f ON l.film_id = f.film_id " +
+                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "WHERE l.user_id = " +
+                "(SELECT l2.user_id " +
+                "FROM likes AS l1 " +
+                "INNER JOIN likes AS l2 ON l1.film_id = l2.film_id " +
+                "WHERE l1.user_id = :user_id AND l2.user_id != :user_id " +
+                "GROUP BY l2.user_id " +
+                "ORDER BY COUNT(l2.user_id) DESC " +
+                "LIMIT 1) " +
+                "AND l.film_id NOT IN " +
+                "(SELECT film_id " +
+                "FROM likes " +
+                "WHERE user_id = :user_id) " +
+                "GROUP BY f.film_id";
+
+        SqlParameterSource parameters = new MapSqlParameterSource("user_id", userId);
+
+        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
+
+        filmDao.updateGenresToAllFilms(filmList);
+        filmDao.updateDirectorsToAllFilms(filmList);
+        return filmList;
     }
 
 
