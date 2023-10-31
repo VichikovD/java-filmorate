@@ -22,32 +22,33 @@ public class DirectorService {
         this.validateService = validateService;
     }
 
-    public Director createDirector(Director director) {
+    public Director create(Director director) {
         return directorDao.create(director);
     }
 
-    public Director updateDirector(Director director) {
+    public Director update(Director director) {
         validateService.validateDirectorId(director);
         int directorId = director.getId();
         directorDao.getById(directorId)
                 .orElseThrow(() -> new NotFoundException("Director not found by id: " + directorId));
+
         directorDao.update(director);
         return director;
     }
 
-    public Director getDirectorById(int directorId) {
+    public Director getById(int directorId) {
         return directorDao.getById(directorId)
                 .orElseThrow(() -> new NotFoundException("Director not found by id: " + directorId));
     }
 
-    public Director deleteDirectorById(int directorId) {
+    public Director deleteById(int directorId) {
         Director directorToRemove = directorDao.getById(directorId)
                 .orElseThrow(() -> new NotFoundException("Director not found by id: " + directorId));
         directorDao.deleteById(directorId);
         return directorToRemove;
     }
 
-    public List<Director> getAllDirectors() {
+    public List<Director> getAll() {
         return new ArrayList<>(directorDao.getAll());
     }
 }

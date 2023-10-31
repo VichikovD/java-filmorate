@@ -39,7 +39,6 @@ public class ReviewDaoImpl implements ReviewDao {
 
         namedParameterJdbcTemplate.update(sqlInsert, parameters, keyHolder);
         review.setReviewId(keyHolder.getKeyAs(Integer.class));
-
         return review;
     }
 
@@ -53,7 +52,6 @@ public class ReviewDaoImpl implements ReviewDao {
                 .addValue("content", review.getContent())
                 .addValue("is_positive", review.getIsPositive())
                 .addValue("review_id", review.getReviewId());
-
         namedParameterJdbcTemplate.update(sqlUpdate, parameters);
     }
 
@@ -89,7 +87,6 @@ public class ReviewDaoImpl implements ReviewDao {
                 "LIMIT :count";
 
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource("count", count);
-
         return namedParameterJdbcTemplate.query(sqlSelect, sqlParameterSource, new ReviewRowMapper());
     }
 
@@ -109,7 +106,6 @@ public class ReviewDaoImpl implements ReviewDao {
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("count", count)
                 .addValue("film_id", filmId);
-
         return namedParameterJdbcTemplate.query(sqlSelect, sqlParameterSource, new ReviewRowMapper());
     }
 
@@ -129,7 +125,6 @@ public class ReviewDaoImpl implements ReviewDao {
         SqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("review_id", reviewId)
                 .addValue("user_id", userId);
-
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
     }
 
@@ -148,7 +143,6 @@ public class ReviewDaoImpl implements ReviewDao {
         SqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("review_id", reviewId)
                 .addValue("user_id", userId);
-
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
     }
 
@@ -160,7 +154,6 @@ public class ReviewDaoImpl implements ReviewDao {
         SqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("review_id", reviewId)
                 .addValue("user_id", userId);
-
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
     }
 
@@ -170,7 +163,6 @@ public class ReviewDaoImpl implements ReviewDao {
                 "WHERE review_id = :review_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("review_id", reviewId);
-
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
     }
 

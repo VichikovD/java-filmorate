@@ -26,61 +26,47 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film createFilm(@RequestBody @Valid Film film) {
+    public Film create(@RequestBody @Valid Film film) {
         log.info("POST {}, body={}", "\"/films\"", film);
-        Film filmToReturn = filmService.createFilm(film);
+        Film filmToReturn = filmService.create(film);
         log.debug(filmToReturn.toString());
         return filmToReturn;
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody @Valid Film film) {
+    public Film update(@RequestBody @Valid Film film) {
         log.info("PUT {}, body={}", "\"/films\"", film);
-        Film filmToReturn = filmService.updateFilm(film);
+        Film filmToReturn = filmService.update(film);
         log.debug(filmToReturn.toString());
         return filmToReturn;
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable("id") int id) {
+    public Film getById(@PathVariable("id") int id) {
         log.info("GET \"/films/" + id + "\"");
-        Film filmToReturn = filmService.getFilmById(id);
+        Film filmToReturn = filmService.getById(id);
         log.debug(filmToReturn.toString());
         return filmToReturn;
     }
 
     @DeleteMapping("/{id}")
-    public void deleteFilmById(@PathVariable("id") Integer id) {
+    public void deleteById(@PathVariable("id") Integer id) {
         log.info("DELETE \"/films/" + id + "\"");
         filmService.deleteById(id);
     }
 
     @GetMapping
-    public List<Film> getAllFilms() {
+    public List<Film> getAll() {
         log.info("GET \"/films\"");
-        List<Film> filmsList = filmService.getAllFilms();
+        List<Film> filmsList = filmService.getAll();
         log.debug(filmsList.toString());
         return filmsList;
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable int id,
-                        @PathVariable int userId) {
-        log.info("PUT {}", "\"/films/" + id + "/like/" + userId + "\"");
-        filmService.addLike(id, userId);
-    }
-
-    @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable int id,
-                           @PathVariable int userId) {
-        log.info("DELETE {}", "\"/films/" + id + "/like/" + userId + "\"");
-        filmService.deleteLike(id, userId);
-    }
-
     @GetMapping("/popular")
-    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = "10") @Min(value = 1) int count,
-                                          @RequestParam(required = false) Integer genreId,
-                                          @RequestParam(required = false) Integer year) {
+    public List<Film> getAllMostPopular(@RequestParam(defaultValue = "10") @Min(value = 1) int count,
+                                        @RequestParam(required = false) Integer genreId,
+                                        @RequestParam(required = false) Integer year) {
         log.info("GET {}, query parameters={}", "\"/films/popular\"", "{count=" + count + ", genre_id=" + genreId + ", year=" + year + "}");
         List<Film> filmsList = filmService.getMostPopularFilms(count, genreId, year);
         log.debug(filmsList.toString());
@@ -112,9 +98,32 @@ public class FilmController {
                                                @RequestParam(name = "by") @NotBlank String filter) {
         log.info("GET {}, query parameters={}", "\"/films/search\"", "{query=" + query + ", by=" + filter + "}");
 
-        List<Film> films = filmService.getAllViaSubstringSearch(query, filter);
+        List<Film> films = filmService.getViaSubstringSearch(query, filter);
         log.debug(films.toString());
 
         return films;
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getByDirectorId(@PathVariable int directorId,
+                                      @RequestParam(defaultValue = "film_id") String sortBy) {
+        log.info("GET {}, query parameters={}", "\"/films/director/" + directorId + "\"", "{sortBy=" + sortBy + "}");
+        List<Film> filmsList = filmService.getByDirectorId(directorId, sortBy);
+        log.debug(filmsList.toString());
+        return filmsList;
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable int id,
+                        @PathVariable int userId) {
+        log.info("PUT {}", "\"/films/" + id + "/like/" + userId + "\"");
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable int id,
+                           @PathVariable int userId) {
+        log.info("DELETE {}", "\"/films/" + id + "/like/" + userId + "\"");
+        filmService.deleteLike(id, userId);
     }
 }

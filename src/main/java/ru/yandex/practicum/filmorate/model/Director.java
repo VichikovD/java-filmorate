@@ -10,6 +10,7 @@ import java.util.Objects;
 @Setter
 @Getter
 @ToString
+@Builder
 public class Director implements Comparable<Director> {
     Integer id;
     @NotBlank(message = "Director name can't be null or empty")

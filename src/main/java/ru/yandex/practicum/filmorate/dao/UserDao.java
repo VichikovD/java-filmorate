@@ -22,11 +22,11 @@ public interface UserDao {
 
     void deleteFriend(User user, User friend);
 
-    List<User> getFriendsListById(int userId);
+    List<User> getFriendsById(int userId);
 
-    List<User> getUserCommonFriends(User user, User otherUser);
+    List<User> getCommonFriends(User user, User otherUser);
 
-    List<Event> getAllEventsByUserId(Integer userId);
+    List<Event> getEventsById(Integer userId);
 
-    List<Film> getRecommendations(int userId);
+    List<Film> getRecommendationsById(int userId);
 }

@@ -37,9 +37,7 @@ public class MpaDaoImpl implements MpaDao {
                 "WHERE mpa_id = :mpa_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("mpa_id", mpaId);
-
         SqlRowSet rsMpa = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
-
         if (rsMpa.next()) {
             Mpa mpa = makeMpa(rsMpa);
             return Optional.of(mpa);
@@ -49,7 +47,10 @@ public class MpaDaoImpl implements MpaDao {
     }
 
     private Mpa makeMpa(SqlRowSet rs) {
-        return new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name"));
+        return Mpa.builder()
+                .id(rs.getInt("mpa_id"))
+                .name(rs.getString("mpa_name"))
+                .build();
     }
 }
 

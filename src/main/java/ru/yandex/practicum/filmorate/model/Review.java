@@ -5,9 +5,6 @@ import lombok.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-// Используется @ToString для отслеживания тестов в терминале, @EqualsAndHashCode в тестах, @Getter, @Setter,
-// Не используется только @RequiredArgsConstructor, поэтому добавил @AllArgsConstructor
-// @Builder использую лоя читаемости в makeFilm()
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

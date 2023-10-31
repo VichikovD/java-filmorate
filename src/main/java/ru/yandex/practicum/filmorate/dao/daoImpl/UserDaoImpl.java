@@ -129,7 +129,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public List<User> getFriendsListById(int userId) {
+    public List<User> getFriendsById(int userId) {
         String sqlSelect = "SELECT u.user_id, u.email, u.login, u.user_name, u.birthday " +
                 "FROM friends AS f " +
                 "LEFT OUTER JOIN users AS u ON f.friend_id = u.user_id " +
@@ -141,7 +141,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public List<User> getUserCommonFriends(User user, User otherUser) {
+    public List<User> getCommonFriends(User user, User otherUser) {
         String sqlSelect = "SELECT u.user_id, u.email, u.login, u.user_name, u.birthday " +
                 "FROM friends AS f " +
                 "INNER JOIN users AS u ON f.friend_id = u.user_id " +
@@ -157,25 +157,25 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public List<Film> getRecommendations(int userId) {
+    public List<Film> getRecommendationsById(int userId) {
         String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
                 "COUNT(l.user_id) as likes_quantity " +
-                "FROM likes AS l " +
+                "FROM film_likes AS l " +
                 "LEFT OUTER JOIN films AS f ON l.film_id = f.film_id " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
                 "WHERE l.user_id = " +
-                "(SELECT l2.user_id " +
-                "FROM likes AS l1 " +
-                "INNER JOIN likes AS l2 ON l1.film_id = l2.film_id " +
-                "WHERE l1.user_id = :user_id AND l2.user_id != :user_id " +
-                "GROUP BY l2.user_id " +
-                "ORDER BY COUNT(l2.user_id) DESC " +
-                "LIMIT 1) " +
+                /**/"(SELECT l2.user_id " +
+                /**/"FROM film_likes AS l1 " +
+                /**/"INNER JOIN film_likes AS l2 ON l1.film_id = l2.film_id " +
+                /**/"WHERE l1.user_id = :user_id AND l2.user_id != :user_id " +
+                /**/"GROUP BY l2.user_id " +
+                /**/"ORDER BY COUNT(l2.user_id) DESC " +
+                /**/"LIMIT 1) " +
                 "AND l.film_id NOT IN " +
-                "(SELECT film_id " +
-                "FROM likes " +
-                "WHERE user_id = :user_id) " +
-                "GROUP BY f.film_id";
+                /**/"(SELECT film_id " +
+                /**/"FROM film_likes " +
+                /**/"WHERE user_id = :user_id) " +
+                /**/"GROUP BY f.film_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("user_id", userId);
 
@@ -188,7 +188,7 @@ public class UserDaoImpl implements UserDao {
 
 
     @Override
-    public List<Event> getAllEventsByUserId(Integer userId) {
+    public List<Event> getEventsById(Integer userId) {
         String sqlSelect = "SELECT event_id, user_id, event_type, operation, timestamp, entity_id " +
                 "FROM events " +
                 "WHERE user_id = :userId";

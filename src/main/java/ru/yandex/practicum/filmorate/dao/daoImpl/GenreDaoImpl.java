@@ -15,8 +15,6 @@ import java.util.Optional;
 @Slf4j
 @Component
 public class GenreDaoImpl implements GenreDao {
-    //  Не могу так быстро найти и, главное, понять как реализовать batch update в namedParameterJdbcTemplate.
-    //  Может оставим JdbcTemplate тут?
     JdbcTemplate jdbcTemplate;
     ValidateService validateService;
 
@@ -39,8 +37,8 @@ public class GenreDaoImpl implements GenreDao {
         String sqlSelect = "SELECT genre_id, genre_name " +
                 "FROM genres " +
                 "WHERE genre_id = ?";
-        SqlRowSet rsGenre = jdbcTemplate.queryForRowSet(sqlSelect, genreId);
 
+        SqlRowSet rsGenre = jdbcTemplate.queryForRowSet(sqlSelect, genreId);
         if (rsGenre.next()) {
             Genre genre = makeGenre(rsGenre);
             return Optional.of(genre);
@@ -50,6 +48,9 @@ public class GenreDaoImpl implements GenreDao {
     }
 
     public Genre makeGenre(SqlRowSet rs) {
-        return new Genre(rs.getInt("genre_id"), rs.getString("genre_name"));
+        return Genre.builder()
+                .id(rs.getInt("genre_id"))
+                .name(rs.getString("genre_name"))
+                .build();
     }
 }

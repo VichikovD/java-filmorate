@@ -55,8 +55,8 @@ public class DirectorDaoImpl implements DirectorDao {
                 "FROM directors " +
                 "WHERE director_id = :director_id";
         SqlParameterSource parameters = new MapSqlParameterSource("director_id", id);
-        SqlRowSet rsDirector = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
 
+        SqlRowSet rsDirector = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
         if (rsDirector.next()) {
             Director director = makeDirector(rsDirector);
             return Optional.of(director);
@@ -70,6 +70,7 @@ public class DirectorDaoImpl implements DirectorDao {
         String sqlDelete = "DELETE FROM directors " +
                 "WHERE director_id = :director_id";
         SqlParameterSource parameters = new MapSqlParameterSource("director_id", id);
+
         namedParameterJdbcTemplate.update(sqlDelete, parameters);
     }
 

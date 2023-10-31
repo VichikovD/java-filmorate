@@ -31,7 +31,7 @@ public class FilmDaoImpl implements FilmDao {
             "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
             "FROM films AS f " +
             "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-            "LEFT OUTER JOIN likes AS l ON f.film_id = l.film_id ";
+            "LEFT OUTER JOIN film_likes AS l ON f.film_id = l.film_id ";
 
     public FilmDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
@@ -98,22 +98,6 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> getByIds(List<Integer> filmsIds) {
-        String sqlSelect = SELECT_FILMS +
-                "WHERE f.film_id IN (:films_ids) " +
-                "GROUP BY f.film_id";
-        SqlParameterSource parameters = new MapSqlParameterSource("films_ids", filmsIds);
-        SqlRowSet rsFilm = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
-        List<Film> films = new ArrayList<>();
-        while (rsFilm.next()) {
-            Film film = makeFilm(rsFilm);
-            film.setGenres(getGenreByFilmId(film.getId()));
-            films.add(film);
-        }
-        return films;
-    }
-
-    @Override
     public void deleteById(Integer id) {
         String sqlDelete = "DELETE FROM films " +
                 "WHERE film_id = :film_id ";
@@ -135,9 +119,9 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+    public List<Film> getAllMostPopular(Integer count, Integer genreId, Integer year) {
         String sqlSelect = SELECT_FILMS +
-                "LEFT JOIN films_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "WHERE (:genreId IS NULL OR fg.genre_id = :genreId) " +
                 "AND (:year IS NULL OR YEAR(f.release_date) = :year) " +
                 "GROUP BY f.film_id " +
@@ -153,6 +137,26 @@ public class FilmDaoImpl implements FilmDao {
 
         updateGenresToAllFilms(filmList);
         updateDirectorsToAllFilms(filmList);
+        return filmList;
+    }
+
+    @Override
+    public List<Film> getViaSubstringSearch(HashMap<String, String> searchFilter) {
+        String sqlSelect = SELECT_FILMS +
+                "LEFT OUTER JOIN film_directors  AS fd ON f.film_id = fd.film_id " +
+                "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
+                "WHERE LOWER(f.film_name) LIKE :title OR LOWER(d.director_name) LIKE :director " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(l.user_id) DESC";
+
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("director", searchFilter.get("director"))
+                .addValue("title", searchFilter.get("title"));
+        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
+
+        updateGenresToAllFilms(filmList);
+        updateDirectorsToAllFilms(filmList);
+
         return filmList;
     }
 
@@ -186,34 +190,14 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> getFilmsViaSubstringSearch(HashMap<String, String> searchFilter) {
-        String sqlSelect = SELECT_FILMS +
-                "LEFT OUTER JOIN films_directors  AS fd ON f.film_id = fd.film_id " +
-                "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
-                "WHERE LOWER(f.film_name) LIKE :title OR LOWER(d.director_name) LIKE :director " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(l.user_id) DESC";
-
-        SqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("director", searchFilter.get("director"))
-                .addValue("title", searchFilter.get("title"));
-        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
-
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
-
-        return filmList;
-    }
-
-    @Override
     public List<Film> getCommon(Integer userId, Integer friendId) {
         String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
                 "COUNT(l3.user_id) as likes_quantity " +
                 "FROM films AS f " +
                 "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "INNER JOIN likes l1 ON f.film_id = l1.film_id " +
-                "INNER JOIN likes l2 ON f.film_id = l2.film_id " +
-                "LEFT JOIN likes l3 ON f.film_id = l3.film_id " +
+                "INNER JOIN film_likes l1 ON f.film_id = l1.film_id " +
+                "INNER JOIN film_likes l2 ON f.film_id = l2.film_id " +
+                "LEFT JOIN film_likes l3 ON f.film_id = l3.film_id " +
                 "WHERE l1.user_id = :userId AND l2.user_id = :friendId " +
                 "GROUP BY f.film_id " +
                 "ORDER BY likes_quantity DESC ";
@@ -232,7 +216,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public void addLike(Film film, User user) {
-        String sqlInsert = "MERGE INTO likes AS l " +
+        String sqlInsert = "MERGE INTO film_likes AS l " +
                 "USING VALUES (:film_id, :user_id) AS source(film_id, user_id) " +
                 "ON l.film_id = source.film_id AND l.user_id = source.user_id " +
                 "WHEN NOT MATCHED THEN " +
@@ -248,7 +232,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public void deleteLike(Film film, User user) {
-        String sqlInsert = "DELETE FROM likes " +
+        String sqlInsert = "DELETE FROM film_likes " +
                 "WHERE film_id = :film_id AND user_id = :user_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource()
@@ -261,7 +245,7 @@ public class FilmDaoImpl implements FilmDao {
     // для getById(), чтобы загрузить жанры
     private Set<Genre> getGenreByFilmId(int filmId) {
         String sql = "SELECT * " +
-                "FROM films_genres AS fg " +
+                "FROM film_genres AS fg " +
                 "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "WHERE fg.film_id = :film_id " +
                 "ORDER BY fg.genre_id";
@@ -274,7 +258,7 @@ public class FilmDaoImpl implements FilmDao {
 
     private Set<Director> getDirectorsByFilmId(int filmId) {
         String sql = "SELECT * " +
-                "FROM films_directors AS fd " +
+                "FROM film_directors AS fd " +
                 "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
                 "WHERE fd.film_id = :film_id " +
                 "ORDER BY fd.director_id";
@@ -293,7 +277,7 @@ public class FilmDaoImpl implements FilmDao {
         deleteGenresFromFilm(filmId);
 
         List<Genre> genreList = new ArrayList<>(genreSet);
-        String sqlInsert = "INSERT INTO films_genres (film_id, genre_id) " +
+        String sqlInsert = "INSERT INTO film_genres (film_id, genre_id) " +
                 "VALUES (?, ?)";
 
         namedParameterJdbcTemplate.getJdbcOperations()
@@ -318,7 +302,7 @@ public class FilmDaoImpl implements FilmDao {
         deleteDirectorsFromFilm(filmId);
 
         List<Director> directorList = new ArrayList<>(directorSet);
-        String sqlInsert = "INSERT INTO films_directors (film_id, director_id) " +
+        String sqlInsert = "INSERT INTO film_directors (film_id, director_id) " +
                 "VALUES (?, ?)";
 
         namedParameterJdbcTemplate.getJdbcOperations()
@@ -336,14 +320,14 @@ public class FilmDaoImpl implements FilmDao {
                 });
     }
 
-    // для getAll() и getMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
-    public void updateGenresToAllFilms(Collection<Film> filmCollection) {
+    // для getAll() и getAllMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
+    private void updateGenresToAllFilms(Collection<Film> filmCollection) {
         Map<Integer, Film> filmMap = filmCollection.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
         Collection<Integer> idList = filmMap.keySet();
 
         String sqlSelect = "SELECT fg.film_id, fg.genre_id, g.genre_name " +
-                "FROM films_genres AS fg " +
+                "FROM film_genres AS fg " +
                 "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "WHERE fg.film_id IN (:ids)";
         SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
@@ -355,13 +339,13 @@ public class FilmDaoImpl implements FilmDao {
         });
     }
 
-    public void updateDirectorsToAllFilms(Collection<Film> filmCollection) {
+    private void updateDirectorsToAllFilms(Collection<Film> filmCollection) {
         Map<Integer, Film> filmMap = filmCollection.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
         Collection<Integer> idList = filmMap.keySet();
 
         String sqlSelect = "SELECT fd.film_id, fd.director_id, d.director_name " +
-                "FROM films_directors AS fd " +
+                "FROM film_directors AS fd " +
                 "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
                 "WHERE fd.film_id IN (:ids)";
         SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
@@ -376,7 +360,7 @@ public class FilmDaoImpl implements FilmDao {
 
     // Чтобы предварительно отчистить films_genres перед updateGenre
     private void deleteGenresFromFilm(int filmId) {
-        String sqlDelete = "DELETE FROM films_genres " +
+        String sqlDelete = "DELETE FROM film_genres " +
                 "WHERE film_id = :film_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("film_id", filmId);
@@ -385,7 +369,7 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     private void deleteDirectorsFromFilm(int filmId) {
-        String sqlDelete = "DELETE FROM films_directors " +
+        String sqlDelete = "DELETE FROM film_directors " +
                 "WHERE film_id = :film_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("film_id", filmId);
