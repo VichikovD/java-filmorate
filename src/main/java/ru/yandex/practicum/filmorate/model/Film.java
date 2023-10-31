@@ -43,8 +43,9 @@ public class Film {
     @NotNull(message = "Film mpa can't be null or empty")
     Mpa mpa;
     Set<Genre> genres;
+    Set<Director> directors;
 
-    public Film(Integer id, String name, String description, LocalDate releaseDate, int duration, Integer likesQuantity, Mpa mpa, Set<Genre> genres) {
+    public Film(Integer id, String name, String description, LocalDate releaseDate, int duration, Integer likesQuantity, Mpa mpa, Set<Genre> genres, Set<Director> directors) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -53,5 +54,6 @@ public class Film {
         this.likesQuantity = likesQuantity;
         this.mpa = mpa;
         this.genres = Objects.requireNonNullElseGet(genres, LinkedHashSet::new);
+        this.directors = Objects.requireNonNullElseGet(directors, LinkedHashSet::new);
     }
 }
