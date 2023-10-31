@@ -10,9 +10,8 @@ import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.dao.mapper.MpaRowMapper;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Component
 public class MpaDaoImpl implements MpaDao {
@@ -23,12 +22,12 @@ public class MpaDaoImpl implements MpaDao {
     }
 
     @Override
-    public Set<Mpa> getAll() {
+    public List<Mpa> getAll() {
         String sqlSelect = "SELECT mpa_id, mpa_name " +
                 "FROM mpas " +
                 "ORDER BY mpa_id";
 
-        return new LinkedHashSet<>(namedParameterJdbcTemplate.query(sqlSelect, new MpaRowMapper()));
+        return namedParameterJdbcTemplate.query(sqlSelect, new MpaRowMapper());
     }
 
     @Override

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -24,12 +23,12 @@ public class FilmService {
     EventDao eventDao;
 
     @Autowired
-    public FilmService(@Qualifier("filmDaoImpl") FilmDao filmDao,
-                       @Qualifier("userDaoImpl") UserDao userDao,
-                       @Qualifier("genreDaoImpl") GenreDao genreDao,
-                       @Qualifier("mpaDaoImpl") MpaDao mpaDao,
-                       @Qualifier("eventDaoImpl") EventDao eventDao,
-                       @Qualifier("directorDaoImpl") DirectorDao directorDao,
+    public FilmService(FilmDao filmDao,
+                       UserDao userDao,
+                       GenreDao genreDao,
+                       MpaDao mpaDao,
+                       EventDao eventDao,
+                       DirectorDao directorDao,
                        ValidateService validateService) {
         this.filmDao = filmDao;
         this.userDao = userDao;
@@ -173,22 +172,8 @@ public class FilmService {
     }
 
 
-    public List<Film> getDirectorFilms(int directorId, String sortBy) {
+    public List<Film> getDirectorFilms(int directorId, SortMode sortBy) {
         directorDao.getById(directorId).orElseThrow(() -> new NotFoundException("Director not found by id: " + directorId));
-        String sortString;
-        switch (sortBy) {
-            case "film_id":
-                sortString = "f.film_id ASC";
-                break;
-            case "year":
-                sortString = "f.release_date ASC";
-                break;
-            case "likes":
-                sortString = "likes_quantity DESC";
-                break;
-            default:
-                sortString = "f.film_id ASC";
-        }
-        return filmDao.getByDirectorId(directorId, sortString);
+        return filmDao.getByDirectorId(directorId, sortBy);
     }
 }

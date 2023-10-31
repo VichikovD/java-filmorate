@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
 import javax.validation.constraints.Min;
-import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -24,7 +24,7 @@ public class MpaController {
     }
 
     @GetMapping
-    public Set<Mpa> getAllMpa() {
+    public List<Mpa> getAllMpa() {
         return mpaService.getAllMpa();
     }
 

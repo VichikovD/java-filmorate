@@ -9,9 +9,8 @@ import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.ValidateService;
 
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @Component
@@ -27,12 +26,12 @@ public class GenreDaoImpl implements GenreDao {
     }
 
     @Override
-    public Set<Genre> getAll() {
+    public List<Genre> getAll() {
         String sql = "SELECT genre_id, genre_name " +
                 "FROM genres " +
                 "ORDER BY genre_id";
 
-        return new LinkedHashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(new ResultSetWrappingSqlRowSet(rs))));
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(new ResultSetWrappingSqlRowSet(rs)));
     }
 
     @Override

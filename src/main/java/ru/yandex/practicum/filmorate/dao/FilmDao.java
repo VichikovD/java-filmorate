@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortMode;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -31,9 +32,9 @@ public interface FilmDao {
 
     void deleteLike(Film filmId, User userId);
 
-    List<Film> getByDirectorId(Integer directorId, String sortParam);
+    List<Film> getByDirectorId(Integer directorId, SortMode sortBy);
 
-    public void updateGenresToAllFilms(Collection<Film> filmCollection);
+    void updateGenresToAllFilms(Collection<Film> filmCollection);
 
-    public void updateDirectorsToAllFilms(Collection<Film> filmCollection);
+    void updateDirectorsToAllFilms(Collection<Film> filmCollection);
 }

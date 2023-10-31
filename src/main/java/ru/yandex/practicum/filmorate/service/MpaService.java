@@ -5,9 +5,7 @@ import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 @Service
 public class MpaService {
@@ -17,10 +15,8 @@ public class MpaService {
         this.mpaDao = mpaDao;
     }
 
-    public Set<Mpa> getAllMpa() {
-        Set<Mpa> sortedMpa = new TreeSet<Mpa>(Comparator.comparing(Mpa::getId));
-        sortedMpa.addAll(mpaDao.getAll());
-        return sortedMpa;
+    public List<Mpa> getAllMpa() {
+        return mpaDao.getAll();
     }
 
     public Mpa getMpaByMpaId(int mpaId) {
