@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SubstringSearch;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -74,7 +75,7 @@ public class FilmController {
 
     @GetMapping("/search")
     public List<Film> getAllViaSubstringSearch(@RequestParam @NotBlank String query,
-                                               @RequestParam(name = "by") @NotBlank String filter) {
+                                               @RequestParam(name = "by") SubstringSearch filter) {
         log.info("GET {}, query parameters={}", "\"/films/search\"", "{query=" + query + ", by=" + filter + "}");
 
         List<Film> films = filmService.getViaSubstringSearch(query, filter);

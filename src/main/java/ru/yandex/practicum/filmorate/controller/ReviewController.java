@@ -5,13 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
-import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -20,13 +17,9 @@ import java.util.List;
 @Validated
 public class ReviewController {
     ReviewService reviewService;
-    FilmService filmService;
-    UserService userService;
 
     @Autowired
-    public ReviewController(FilmService filmService, UserService userService, ReviewService reviewService) {
-        this.filmService = filmService;
-        this.userService = userService;
+    public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
     }
 
@@ -58,16 +51,10 @@ public class ReviewController {
     public List<Review> getByFilmIdOrGetAll(@RequestParam(required = false) Integer filmId,
                                             @RequestParam(defaultValue = "10") @Min(value = 1) int count) {
         log.info("GET {}, query parameters={}, {}", "\"/reviews\"", "{id=" + filmId + "}", "{count=" + count + "}");
-        List<Review> reviewList = new ArrayList<>();
 
-        if (filmId == null) {
-            reviewList = reviewService.getAll(count);
-        } else {
-            reviewList = reviewService.getAllByFilmId(filmId, count);
-        }
-
-        log.debug(reviewList.toString());
-        return reviewList;
+        List<Review> reviewsToReturn = reviewService.getByFilmIdOrGetAll(filmId, count);
+        log.debug(reviewsToReturn.toString());
+        return reviewsToReturn;
     }
 
     @DeleteMapping("/{id}")

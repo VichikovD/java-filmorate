@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.EventDao;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
@@ -14,13 +15,16 @@ import java.util.List;
 @Service
 public class UserService {
     UserDao userDao;
+    FilmDao filmDao;
     ValidateService validateService;
     EventDao eventDao;
 
     @Autowired
     public UserService(@Qualifier("userDaoImpl") UserDao userDao,
                        @Qualifier("eventDaoImpl") EventDao eventDao,
+                       FilmDao filmDao,
                        ValidateService validateService) {
+        this.filmDao = filmDao;
         this.userDao = userDao;
         this.validateService = validateService;
         this.eventDao = eventDao;
@@ -113,10 +117,10 @@ public class UserService {
     public List<Event> getEventsById(Integer userId) {
         userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        return userDao.getEventsById(userId);
+        return eventDao.getByUserId(userId);
     }
 
     public List<Film> getRecommendationsById(int userId) {
-        return userDao.getRecommendationsById(userId);
+        return filmDao.getRecommendationsById(userId);
     }
 }

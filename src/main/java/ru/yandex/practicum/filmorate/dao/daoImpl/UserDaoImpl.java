@@ -12,11 +12,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
-import ru.yandex.practicum.filmorate.dao.mapper.EventRowMapper;
-import ru.yandex.practicum.filmorate.dao.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mapper.UserRowMapper;
-import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -154,48 +150,6 @@ public class UserDaoImpl implements UserDao {
                 .addValue("other_user_id", otherUser.getId());
 
         return namedParameterJdbcTemplate.query(sqlSelect, parameters, new UserRowMapper());
-    }
-
-    @Override
-    public List<Film> getRecommendationsById(int userId) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
-                "FROM film_likes AS l " +
-                "LEFT OUTER JOIN films AS f ON l.film_id = f.film_id " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "WHERE l.user_id = " +
-                /**/"(SELECT l2.user_id " +
-                /**/"FROM film_likes AS l1 " +
-                /**/"INNER JOIN film_likes AS l2 ON l1.film_id = l2.film_id " +
-                /**/"WHERE l1.user_id = :user_id AND l2.user_id != :user_id " +
-                /**/"GROUP BY l2.user_id " +
-                /**/"ORDER BY COUNT(l2.user_id) DESC " +
-                /**/"LIMIT 1) " +
-                "AND l.film_id NOT IN " +
-                /**/"(SELECT film_id " +
-                /**/"FROM film_likes " +
-                /**/"WHERE user_id = :user_id) " +
-                /**/"GROUP BY f.film_id";
-
-        SqlParameterSource parameters = new MapSqlParameterSource("user_id", userId);
-
-        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
-
-        filmDao.updateGenresToAllFilms(filmList);
-        filmDao.updateDirectorsToAllFilms(filmList);
-        return filmList;
-    }
-
-
-    @Override
-    public List<Event> getEventsById(Integer userId) {
-        String sqlSelect = "SELECT event_id, user_id, event_type, operation, timestamp, entity_id " +
-                "FROM events " +
-                "WHERE user_id = :userId";
-
-        SqlParameterSource parameters = new MapSqlParameterSource("userId", userId);
-
-        return namedParameterJdbcTemplate.query(sqlSelect, parameters, new EventRowMapper());
     }
 
     private User makeUser(SqlRowSet rs) {
