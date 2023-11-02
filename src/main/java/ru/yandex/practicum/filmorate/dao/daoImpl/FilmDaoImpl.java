@@ -113,8 +113,8 @@ public class FilmDaoImpl implements FilmDao {
                 "GROUP BY f.film_id";
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
         return filmList;
     }
 
@@ -135,13 +135,32 @@ public class FilmDaoImpl implements FilmDao {
 
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
         return filmList;
     }
 
     @Override
-    public List<Film> getViaSubstringSearch(HashMap<String, String> searchFilter) {
+    public List<Film> getViaSubstringSearch(String query, SubstringSearch filter) {
+        String correctedQuery = query.toLowerCase()
+                .replaceAll(";", "");
+        HashMap<String, String> filterMap = new HashMap<>();
+
+        switch (filter) {
+            case DIRECTOR:
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "NULL");
+                break;
+            case TITLE:
+                filterMap.put("director", "NULL");
+                filterMap.put("title", "%" + correctedQuery + "%");
+                break;
+            case DIRECTOR_TITLE:
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "%" + correctedQuery + "%");
+                break;
+        }
+
         String sqlSelect = SELECT_FILMS +
                 "LEFT OUTER JOIN film_directors  AS fd ON f.film_id = fd.film_id " +
                 "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
@@ -150,12 +169,12 @@ public class FilmDaoImpl implements FilmDao {
                 "ORDER BY COUNT(l.user_id) DESC";
 
         SqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("director", searchFilter.get("director"))
-                .addValue("title", searchFilter.get("title"));
+                .addValue("director", filterMap.get("director"))
+                .addValue("title", filterMap.get("title"));
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
 
         return filmList;
     }
@@ -184,8 +203,8 @@ public class FilmDaoImpl implements FilmDao {
 
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
         return filmList;
     }
 
@@ -208,9 +227,39 @@ public class FilmDaoImpl implements FilmDao {
 
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, params, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
 
+        return filmList;
+    }
+
+    @Override
+    public List<Film> getRecommendationsById(int userId) {
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
+                "COUNT(l.user_id) as likes_quantity " +
+                "FROM film_likes AS l " +
+                "LEFT OUTER JOIN films AS f ON l.film_id = f.film_id " +
+                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "WHERE l.user_id = " +
+                /**/"(SELECT l2.user_id " +
+                /**/"FROM film_likes AS l1 " +
+                /**/"INNER JOIN film_likes AS l2 ON l1.film_id = l2.film_id " +
+                /**/"WHERE l1.user_id = :user_id AND l2.user_id != :user_id " +
+                /**/"GROUP BY l2.user_id " +
+                /**/"ORDER BY COUNT(l2.user_id) DESC " +
+                /**/"LIMIT 1) " +
+                "AND l.film_id NOT IN " +
+                /**/"(SELECT film_id " +
+                /**/"FROM film_likes " +
+                /**/"WHERE user_id = :user_id) " +
+                /**/"GROUP BY f.film_id";
+
+        SqlParameterSource parameters = new MapSqlParameterSource("user_id", userId);
+
+        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
+
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
         return filmList;
     }
 
@@ -240,6 +289,44 @@ public class FilmDaoImpl implements FilmDao {
                 .addValue("user_id", user.getId());
 
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
+    }
+
+    // для getAll() и getAllMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
+    private void loadGenresToAllFilms(Collection<Film> filmCollection) {
+        Map<Integer, Film> filmMap = filmCollection.stream()
+                .collect(Collectors.toMap(Film::getId, Function.identity()));
+        Collection<Integer> idList = filmMap.keySet();
+
+        String sqlSelect = "SELECT fg.film_id, fg.genre_id, g.genre_name " +
+                "FROM film_genres AS fg " +
+                "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "WHERE fg.film_id IN (:ids)";
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
+        namedParameterJdbcTemplate.query(sqlSelect, parameters, (rs, rowNum) -> {
+            Film film = filmMap.get(rs.getInt("film_id"));
+            Set<Genre> genres = film.getGenres();
+            genres.add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
+            return null;
+        });
+    }
+
+    private void loadDirectorsToAllFilms(Collection<Film> filmCollection) {
+        Map<Integer, Film> filmMap = filmCollection.stream()
+                .collect(Collectors.toMap(Film::getId, Function.identity()));
+        Collection<Integer> idList = filmMap.keySet();
+
+        String sqlSelect = "SELECT fd.film_id, fd.director_id, d.director_name " +
+                "FROM film_directors AS fd " +
+                "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
+                "WHERE fd.film_id IN (:ids)";
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
+
+        namedParameterJdbcTemplate.query(sqlSelect, parameters, (rs, rowNum) -> {
+            Film film = filmMap.get(rs.getInt("film_id"));
+            Set<Director> directors = film.getDirectors();
+            directors.add(new Director(rs.getInt("director_id"), rs.getString("director_name")));
+            return null;
+        });
     }
 
     // для getById(), чтобы загрузить жанры
@@ -318,44 +405,6 @@ public class FilmDaoImpl implements FilmDao {
                         return directorList.size();
                     }
                 });
-    }
-
-    // для getAll() и getAllMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
-    private void updateGenresToAllFilms(Collection<Film> filmCollection) {
-        Map<Integer, Film> filmMap = filmCollection.stream()
-                .collect(Collectors.toMap(Film::getId, Function.identity()));
-        Collection<Integer> idList = filmMap.keySet();
-
-        String sqlSelect = "SELECT fg.film_id, fg.genre_id, g.genre_name " +
-                "FROM film_genres AS fg " +
-                "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "WHERE fg.film_id IN (:ids)";
-        SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
-        namedParameterJdbcTemplate.query(sqlSelect, parameters, (rs, rowNum) -> {
-            Film film = filmMap.get(rs.getInt("film_id"));
-            Set<Genre> genres = film.getGenres();
-            genres.add(new Genre(rs.getInt("genre_id"), rs.getString("genre_name")));
-            return null;
-        });
-    }
-
-    private void updateDirectorsToAllFilms(Collection<Film> filmCollection) {
-        Map<Integer, Film> filmMap = filmCollection.stream()
-                .collect(Collectors.toMap(Film::getId, Function.identity()));
-        Collection<Integer> idList = filmMap.keySet();
-
-        String sqlSelect = "SELECT fd.film_id, fd.director_id, d.director_name " +
-                "FROM film_directors AS fd " +
-                "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
-                "WHERE fd.film_id IN (:ids)";
-        SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
-
-        namedParameterJdbcTemplate.query(sqlSelect, parameters, (rs, rowNum) -> {
-            Film film = filmMap.get(rs.getInt("film_id"));
-            Set<Director> directors = film.getDirectors();
-            directors.add(new Director(rs.getInt("director_id"), rs.getString("director_name")));
-            return null;
-        });
     }
 
     // Чтобы предварительно отчистить films_genres перед updateGenre

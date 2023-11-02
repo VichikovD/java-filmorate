@@ -7,7 +7,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.EventDao;
+import ru.yandex.practicum.filmorate.dao.mapper.EventRowMapper;
 import ru.yandex.practicum.filmorate.model.Event;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -31,5 +34,16 @@ public class EventDaoImpl implements EventDao {
                 .addValue("entity_id", event.getEntityId());
 
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
+    }
+
+    @Override
+    public List<Event> getByUserId(Integer userId) {
+        String sqlSelect = "SELECT event_id, user_id, event_type, operation, timestamp, entity_id " +
+                "FROM events " +
+                "WHERE user_id = :userId";
+
+        SqlParameterSource parameters = new MapSqlParameterSource("userId", userId);
+
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, new EventRowMapper());
     }
 }
