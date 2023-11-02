@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public class FilmDaoImpl implements FilmDao {
     NamedParameterJdbcOperations namedParameterJdbcTemplate;
 
-    private final static String SELECT_FILMS = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+    private static final String SELECT_FILMS = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
             "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
             "FROM films AS f " +
             "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
