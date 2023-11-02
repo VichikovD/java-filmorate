@@ -194,7 +194,7 @@ public class FilmDaoImpl implements FilmDao {
         }
 
         String sqlSelect = SELECT_FILMS +
-                "LEFT OUTER JOIN films_directors AS fd ON f.film_id = fd.film_id " +
+                "LEFT OUTER JOIN film_directors AS fd ON f.film_id = fd.film_id " +
                 "WHERE fd.director_id = :director_id " +
                 "GROUP BY f.film_id " +
                 "ORDER BY " + sortString;

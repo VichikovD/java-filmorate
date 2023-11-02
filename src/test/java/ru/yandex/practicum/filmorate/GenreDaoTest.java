@@ -9,10 +9,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,8 +24,8 @@ public class GenreDaoTest {
 
     @Test
     public void testGetAll() {
-        Set<Genre> genresActual = genreDao.getAll();
-        Set<Genre> genresExpected = new HashSet<>(data.getGenreList());
+        List<Genre> genresActual = genreDao.getAll();
+        List<Genre> genresExpected = new ArrayList<>(data.getGenreList());
 
         assertEquals(genresExpected, genresActual);
     }

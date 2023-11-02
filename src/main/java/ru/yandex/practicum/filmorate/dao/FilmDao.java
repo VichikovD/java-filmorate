@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.SubstringSearch;
 import ru.yandex.practicum.filmorate.model.SortMode;
+import ru.yandex.practicum.filmorate.model.SubstringSearch;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public interface FilmDao {
 
     List<Film> getViaSubstringSearch(String query, SubstringSearch filter);
 
-    List<Film> getByDirectorId(Integer directorId, String sortParam);
+    List<Film> getByDirectorId(Integer directorId, SortMode sortParam);
 
     List<Film> getCommon(Integer userId, Integer friendId);
 

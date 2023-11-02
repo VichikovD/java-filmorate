@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.SubstringSearch;
 import ru.yandex.practicum.filmorate.model.SortMode;
+import ru.yandex.practicum.filmorate.model.SubstringSearch;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -75,19 +75,17 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> getAllViaSubstringSearch(@RequestParam @NotBlank String query,
-                                               @RequestParam(name = "by") SubstringSearch filter) {
+    public List<Film> getViaSubstringSearch(@RequestParam @NotBlank String query,
+                                            @RequestParam(name = "by") SubstringSearch filter) {
         log.info("GET {}, query parameters={}", "\"/films/search\"", "{query=" + query + ", by=" + filter + "}");
-
         List<Film> films = filmService.getViaSubstringSearch(query, filter);
         log.debug(films.toString());
-
         return films;
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film> getDirectorFilms(@PathVariable int directorId,
-                                       @RequestParam(defaultValue = "FILM_ID") SortMode sortBy) {
+    public List<Film> getByDirectorId(@PathVariable int directorId,
+                                      @RequestParam(defaultValue = "FILM_ID") SortMode sortBy) {
         log.info("GET {}, query parameters={}", "\"/films/director/" + directorId + "\"", "{sortBy=" + sortBy + "}");
         List<Film> filmsList = filmService.getByDirectorId(directorId, sortBy);
         log.debug(filmsList.toString());
@@ -95,9 +93,9 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public List<Film> getCommon(@RequestParam Integer userId, @RequestParam Integer friendId) {
+    public List<Film> getCommon(@RequestParam Integer userId,
+                                @RequestParam Integer friendId) {
         log.info("GET {}, query parameters={}", "\"/films/common\"", "{userId=" + userId + ", friendId=" + friendId + "}");
-
         List<Film> commonFilms = filmService.getCommon(userId, friendId);
         log.debug(commonFilms.toString());
 
