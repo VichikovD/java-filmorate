@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.GenreService;
 
 import javax.validation.constraints.Min;
-import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -26,9 +26,9 @@ public class GenreController {
     }
 
     @GetMapping
-    public Set<Genre> getAll() {
+    public List<Genre> getAll() {
         log.info("GET \"/films/genres\"");
-        Set<Genre> genreList = genreService.getAll();
+        List<Genre> genreList = genreService.getAll();
         log.debug(genreList.toString());
         return genreList;
     }

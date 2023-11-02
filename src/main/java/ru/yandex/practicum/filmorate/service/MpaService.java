@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.util.Set;
+import java.util.List;
 
 @Service
 public class MpaService {
@@ -17,7 +17,7 @@ public class MpaService {
         this.mpaDao = mpaDao;
     }
 
-    public Set<Mpa> getAll() {
+    public List<Mpa> getAll() {
         return mpaDao.getAll();
     }
 

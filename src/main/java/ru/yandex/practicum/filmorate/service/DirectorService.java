@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.DirectorDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -17,7 +16,7 @@ public class DirectorService {
     ValidateService validateService;
 
     @Autowired
-    public DirectorService(@Qualifier("directorDaoImpl") DirectorDao directorDao,
+    public DirectorService(DirectorDao directorDao,
                            ValidateService validateService) {
         this.directorDao = directorDao;
         this.validateService = validateService;

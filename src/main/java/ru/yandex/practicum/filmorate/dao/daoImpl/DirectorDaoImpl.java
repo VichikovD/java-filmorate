@@ -12,9 +12,8 @@ import ru.yandex.practicum.filmorate.dao.DirectorDao;
 import ru.yandex.practicum.filmorate.dao.mapper.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @Component
@@ -76,12 +75,12 @@ public class DirectorDaoImpl implements DirectorDao {
     }
 
     @Override
-    public Set<Director> getAll() {
+    public List<Director> getAll() {
         String sqlSelect = "SELECT director_id, director_name " +
                 "FROM directors " +
                 "ORDER BY director_id";
 
-        return new LinkedHashSet<>(namedParameterJdbcTemplate.query(sqlSelect, new DirectorRowMapper()));
+        return namedParameterJdbcTemplate.query(sqlSelect, new DirectorRowMapper());
     }
 
     private Director makeDirector(SqlRowSet rs) {

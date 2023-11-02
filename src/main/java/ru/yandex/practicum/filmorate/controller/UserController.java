@@ -100,7 +100,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/recommendations")
-    public List<Film> getRecommendations(@PathVariable int userId) {
+    public List<Film> getRecommendationsById(@PathVariable int userId) {
         log.info("GET {}", "\"/users/" + userId + "/recommendations/\"");
         List<Film> recommendedFilms = userService.getRecommendationsById(userId);
         log.debug(recommendedFilms.toString());

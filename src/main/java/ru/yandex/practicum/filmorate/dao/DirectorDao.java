@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.dao;
 
 import ru.yandex.practicum.filmorate.model.Director;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface DirectorDao {
 
@@ -15,5 +15,5 @@ public interface DirectorDao {
 
     void deleteById(Integer id);
 
-    Set<Director> getAll();
+    List<Director> getAll();
 }

@@ -88,12 +88,12 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Review not found by id: " + reviewId));
     }
 
-    public List<Review> getAll(int count) {
-        return reviewDao.getAll(count);
-    }
-
-    public List<Review> getAllByFilmId(Integer filmId, Integer count) {
-        return reviewDao.getAllByFilmId(filmId, count);
+    public List<Review> getByFilmIdOrGetAll(Integer filmId, Integer count) {
+        if (filmId == null) {
+            return reviewDao.getAll(count);
+        } else {
+            return reviewDao.getAllByFilmId(filmId, count);
+        }
     }
 
     public void addLike(Integer reviewId, Integer userId) {

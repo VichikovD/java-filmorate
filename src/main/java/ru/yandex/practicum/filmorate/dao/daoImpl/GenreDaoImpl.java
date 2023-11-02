@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.rowset.ResultSetWrappingSqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -9,37 +11,37 @@ import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.ValidateService;
 
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @Component
 public class GenreDaoImpl implements GenreDao {
-    JdbcTemplate jdbcTemplate;
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     ValidateService validateService;
 
-    public GenreDaoImpl(JdbcTemplate jdbcTemplate, ValidateService validateService) {
-        this.jdbcTemplate = jdbcTemplate;
+    public GenreDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate, ValidateService validateService) {
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.validateService = validateService;
     }
 
     @Override
-    public Set<Genre> getAll() {
+    public List<Genre> getAll() {
         String sql = "SELECT genre_id, genre_name " +
                 "FROM genres " +
                 "ORDER BY genre_id";
 
-        return new LinkedHashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(new ResultSetWrappingSqlRowSet(rs))));
+        return namedParameterJdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(new ResultSetWrappingSqlRowSet(rs)));
     }
 
     @Override
     public Optional<Genre> getById(int genreId) {
         String sqlSelect = "SELECT genre_id, genre_name " +
                 "FROM genres " +
-                "WHERE genre_id = ?";
+                "WHERE genre_id = :genre_id";
 
-        SqlRowSet rsGenre = jdbcTemplate.queryForRowSet(sqlSelect, genreId);
+        SqlParameterSource parameters = new MapSqlParameterSource("genre_id", genreId);
+        SqlRowSet rsGenre = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
         if (rsGenre.next()) {
             Genre genre = makeGenre(rsGenre);
             return Optional.of(genre);

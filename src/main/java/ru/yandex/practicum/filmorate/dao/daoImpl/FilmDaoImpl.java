@@ -27,6 +27,12 @@ import java.util.stream.Collectors;
 public class FilmDaoImpl implements FilmDao {
     NamedParameterJdbcOperations namedParameterJdbcTemplate;
 
+    private final static String SELECT_FILMS = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
+            "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
+            "FROM films AS f " +
+            "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+            "LEFT OUTER JOIN film_likes AS l ON f.film_id = l.film_id ";
+
     public FilmDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
@@ -75,11 +81,7 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public Optional<Film> getById(Integer filmId) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
-                "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN film_likes AS l ON f.film_id = l.film_id " +
+        String sqlSelect = SELECT_FILMS +
                 "WHERE f.film_id = :film_id " +
                 "GROUP BY f.film_id";
         SqlParameterSource parameters = new MapSqlParameterSource("film_id", filmId);
@@ -107,26 +109,18 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getAll() {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) as likes_quantity " +
-                "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN film_likes AS l ON f.film_id = l.film_id " +
+        String sqlSelect = SELECT_FILMS +
                 "GROUP BY f.film_id";
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
         return filmList;
     }
 
     @Override
     public List<Film> getAllMostPopular(Integer count, Integer genreId, Integer year) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, " +
-                "m.mpa_name, COUNT(l.user_id) AS likes_quantity " +
-                "FROM films AS f " +
-                "LEFT JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN film_likes AS l ON f.film_id = l.film_id " +
+        String sqlSelect = SELECT_FILMS +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "WHERE (:genreId IS NULL OR fg.genre_id = :genreId) " +
                 "AND (:year IS NULL OR YEAR(f.release_date) = :year) " +
@@ -141,18 +135,33 @@ public class FilmDaoImpl implements FilmDao {
 
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
         return filmList;
     }
 
     @Override
-    public List<Film> getViaSubstringSearch(HashMap<String, String> searchFilter) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
-                "FROM films AS f " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN film_likes AS l ON f.film_id = l.film_id " +
+    public List<Film> getViaSubstringSearch(String query, SubstringSearch filter) {
+        String correctedQuery = query.toLowerCase()
+                .replaceAll(";", "");
+        HashMap<String, String> filterMap = new HashMap<>();
+
+        switch (filter) {
+            case DIRECTOR:
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "NULL");
+                break;
+            case TITLE:
+                filterMap.put("director", "NULL");
+                filterMap.put("title", "%" + correctedQuery + "%");
+                break;
+            case DIRECTOR_TITLE:
+                filterMap.put("director", "%" + correctedQuery + "%");
+                filterMap.put("title", "%" + correctedQuery + "%");
+                break;
+        }
+
+        String sqlSelect = SELECT_FILMS +
                 "LEFT OUTER JOIN film_directors  AS fd ON f.film_id = fd.film_id " +
                 "LEFT OUTER JOIN directors AS d ON fd.director_id = d.director_id " +
                 "WHERE LOWER(f.film_name) LIKE :title OR LOWER(d.director_name) LIKE :director " +
@@ -160,34 +169,42 @@ public class FilmDaoImpl implements FilmDao {
                 "ORDER BY COUNT(l.user_id) DESC";
 
         SqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("director", searchFilter.get("director"))
-                .addValue("title", searchFilter.get("title"));
+                .addValue("director", filterMap.get("director"))
+                .addValue("title", filterMap.get("title"));
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
 
         return filmList;
     }
 
     @Override
-    public List<Film> getByDirectorId(Integer id, String sortBy) {
-        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
-                "COUNT(l.user_id) as likes_quantity " +
-                "FROM films AS f " +
+    public List<Film> getByDirectorId(Integer id, SortMode sortBy) {
+        String sortString;
+        switch (sortBy) {
+            case YEAR:
+                sortString = "f.release_date ASC";
+                break;
+            case LIKES:
+                sortString = "likes_quantity DESC";
+                break;
+            default:
+                sortString = "f.film_id ASC";
+        }
+
+        String sqlSelect = SELECT_FILMS +
                 "LEFT OUTER JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT OUTER JOIN film_likes AS l ON f.film_id = l.film_id " +
                 "WHERE fd.director_id = :director_id " +
                 "GROUP BY f.film_id " +
-                "ORDER BY " + sortBy;
+                "ORDER BY " + sortString;
 
         SqlParameterSource parameters = new MapSqlParameterSource("director_id", id);
 
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
         return filmList;
     }
 
@@ -210,9 +227,39 @@ public class FilmDaoImpl implements FilmDao {
 
         List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, params, new FilmRowMapper());
 
-        updateGenresToAllFilms(filmList);
-        updateDirectorsToAllFilms(filmList);
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
 
+        return filmList;
+    }
+
+    @Override
+    public List<Film> getRecommendationsById(int userId) {
+        String sqlSelect = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, m.mpa_id, m.mpa_name, " +
+                "COUNT(l.user_id) as likes_quantity " +
+                "FROM film_likes AS l " +
+                "LEFT OUTER JOIN films AS f ON l.film_id = f.film_id " +
+                "LEFT OUTER JOIN mpas AS m ON f.mpa_id = m.mpa_id " +
+                "WHERE l.user_id = " +
+                /**/"(SELECT l2.user_id " +
+                /**/"FROM film_likes AS l1 " +
+                /**/"INNER JOIN film_likes AS l2 ON l1.film_id = l2.film_id " +
+                /**/"WHERE l1.user_id = :user_id AND l2.user_id != :user_id " +
+                /**/"GROUP BY l2.user_id " +
+                /**/"ORDER BY COUNT(l2.user_id) DESC " +
+                /**/"LIMIT 1) " +
+                "AND l.film_id NOT IN " +
+                /**/"(SELECT film_id " +
+                /**/"FROM film_likes " +
+                /**/"WHERE user_id = :user_id) " +
+                /**/"GROUP BY f.film_id";
+
+        SqlParameterSource parameters = new MapSqlParameterSource("user_id", userId);
+
+        List<Film> filmList = namedParameterJdbcTemplate.query(sqlSelect, parameters, new FilmRowMapper());
+
+        loadGenresToAllFilms(filmList);
+        loadDirectorsToAllFilms(filmList);
         return filmList;
     }
 
@@ -245,7 +292,7 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     // для getAll() и getAllMostPopular(), чтобы добавить жанры сразу всем фильмам одним запросом
-    public void updateGenresToAllFilms(Collection<Film> filmCollection) {
+    private void loadGenresToAllFilms(Collection<Film> filmCollection) {
         Map<Integer, Film> filmMap = filmCollection.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
         Collection<Integer> idList = filmMap.keySet();
@@ -263,7 +310,7 @@ public class FilmDaoImpl implements FilmDao {
         });
     }
 
-    public void updateDirectorsToAllFilms(Collection<Film> filmCollection) {
+    private void loadDirectorsToAllFilms(Collection<Film> filmCollection) {
         Map<Integer, Film> filmMap = filmCollection.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
         Collection<Integer> idList = filmMap.keySet();
