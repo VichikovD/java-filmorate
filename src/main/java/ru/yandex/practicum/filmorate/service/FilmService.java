@@ -152,49 +152,4 @@ public class FilmService {
                 .build();
         eventDao.create(event);
     }
-
-    public List<Film> getCommon(Integer userId, Integer friendId) {
-        userDao.getById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        userDao.getById(friendId)
-                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-
-        return filmDao.getCommon(userId, friendId);
-    }
-
-    public void addLike(Integer filmId, Integer userId) {
-        Film film = filmDao.getById(filmId)
-                .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
-        User user = userDao.getById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-
-        filmDao.addLike(film, user);
-
-        Event event = Event.builder()
-                .timestamp(Instant.now().toEpochMilli())
-                .userId(userId)
-                .eventType(EventType.LIKE)
-                .operation(EventOperation.ADD)
-                .entityId(filmId)
-                .build();
-        eventDao.create(event);
-    }
-
-    public void deleteLike(int filmId, int userId) {
-        Film film = filmDao.getById(filmId)
-                .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
-        User user = userDao.getById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-
-        filmDao.deleteLike(film, user);
-
-        Event event = Event.builder()
-                .timestamp(Instant.now().toEpochMilli())
-                .userId(userId)
-                .eventType(EventType.LIKE)
-                .operation(EventOperation.REMOVE)
-                .entityId(filmId)
-                .build();
-        eventDao.create(event);
-    }
 }
