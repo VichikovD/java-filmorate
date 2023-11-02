@@ -17,6 +17,7 @@ public class GenreService {
         this.genreDao = genreDao;
     }
 
+
     public List<Genre> getAll() {
         return genreDao.getAll();
     }

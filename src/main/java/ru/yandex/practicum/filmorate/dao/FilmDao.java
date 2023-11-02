@@ -25,8 +25,8 @@ public interface FilmDao {
 
     List<Film> getByDirectorId(Integer directorId, SortMode sortParam);
 
-    List<Film> getCommon(Integer userId, Integer friendId);
-
+    List<Film> getByDirectorId(Integer directorId, String sortParam);
+  
     List<Film> getRecommendationsById(int userId);
 
     void addLike(Film film, User userId);

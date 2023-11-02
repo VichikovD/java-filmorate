@@ -99,32 +99,6 @@ public class FilmService {
     }
 
     public List<Film> getViaSubstringSearch(String query, SubstringSearch filter) {
-        /*
-
-        String correctedFilter = filter.toLowerCase()
-                .replaceAll(" ", "");
-        String correctedQuery = query.toLowerCase()
-                .replaceAll(";", "");
-        HashMap<String, String> filterMap = new HashMap<>();
-        switch (correctedFilter) {
-            case "director":
-                filterMap.put("director", "%" + correctedQuery + "%");
-                filterMap.put("title", "NULL");
-                break;
-            case "title":
-                filterMap.put("director", "NULL");
-                filterMap.put("title", "%" + correctedQuery + "%");
-                break;
-            case "director,title":
-            case "title,director":
-                filterMap.put("director", "%" + correctedQuery + "%");
-                filterMap.put("title", "%" + correctedQuery + "%");
-                break;
-
-            default:
-                throw new ValidateException("Invalid filer: %s. Filter may have the following values: director, title");
-        }
-        */
         return filmDao.getViaSubstringSearch(query, filter);
     }
 
@@ -132,6 +106,51 @@ public class FilmService {
     public List<Film> getByDirectorId(int directorId, SortMode sortBy) {
         directorDao.getById(directorId).orElseThrow(() -> new NotFoundException("Director not found by id: " + directorId));
         return filmDao.getByDirectorId(directorId, sortBy);
+    }
+
+    public List<Film> getCommon(Integer userId, Integer friendId) {
+        userDao.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        userDao.getById(friendId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+
+        return filmDao.getCommon(userId, friendId);
+    }
+
+    public void addLike(Integer filmId, Integer userId) {
+        Film film = filmDao.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
+        User user = userDao.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+
+        filmDao.addLike(film, user);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(EventOperation.ADD)
+                .entityId(filmId)
+                .build();
+        eventDao.create(event);
+    }
+
+    public void deleteLike(int filmId, int userId) {
+        Film film = filmDao.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Film not found by id: " + filmId));
+        User user = userDao.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+
+        filmDao.deleteLike(film, user);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.LIKE)
+                .operation(EventOperation.REMOVE)
+                .entityId(filmId)
+                .build();
+        eventDao.create(event);
     }
 
     public List<Film> getCommon(Integer userId, Integer friendId) {
