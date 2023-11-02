@@ -160,9 +160,6 @@ public class FilmDaoImpl implements FilmDao {
     public List<Film> getByDirectorId(Integer id, SortMode sortBy) {
         String sortString;
         switch (sortBy) {
-            case FILM_ID:
-                sortString = "f.film_id ASC";
-                break;
             case YEAR:
                 sortString = "f.release_date ASC";
                 break;

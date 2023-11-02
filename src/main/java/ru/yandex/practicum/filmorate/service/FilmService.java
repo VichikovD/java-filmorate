@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -48,10 +49,10 @@ public class FilmService {
         Set<Director> filmDirectors = film.getDirectors();
 
         if (filmGenres != null
-                && !genreDao.getAll().containsAll(filmGenres)) {
+                && !new HashSet<>(genreDao.getAll()).containsAll(filmGenres)) {
             throw new NotFoundException("Genres id not found. Please check available genre id via GET /genre ");
         } else if (filmDirectors != null
-                && !directorDao.getAll().containsAll(filmDirectors)) {
+                && !new HashSet<>(directorDao.getAll()).containsAll(filmDirectors)) {
             throw new NotFoundException("Directors id not found. Please check available director id via GET /director ");
         } else {
             return filmDao.create(film);
@@ -71,10 +72,10 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Mpa not found by id: " + mpaId));
 
         if (filmGenres != null
-                && !genreDao.getAll().containsAll(filmGenres)) {
+                && !new HashSet<>(genreDao.getAll()).containsAll(filmGenres)) {
             throw new NotFoundException("Genres id not found. Please check available genre id via GET /genre ");
         } else if (filmDirectors != null
-                && !directorDao.getAll().containsAll(filmDirectors)) {
+                && !new HashSet<>(directorDao.getAll()).containsAll(filmDirectors)) {
             throw new NotFoundException("Directors id not found. Please check available director id via GET /director ");
         } else {
             filmDao.update(film);
