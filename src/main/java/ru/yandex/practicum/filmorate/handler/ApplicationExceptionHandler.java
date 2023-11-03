@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -66,6 +67,14 @@ public class ApplicationExceptionHandler {
         log.debug("{} = {}", "Invalid parameter: " + e.getName(), errorMessage);
         return new ErrorResponse("Not valid request",
                 String.format("Please check if parameter - %s is correct", e.getName().toUpperCase()));
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleConversionFailedException(ConversionFailedException e) {
+        String errorMessage = e.getMessage();
+        log.debug("Invalid request parameter = {}", errorMessage);
+        return new ErrorResponse("Invalid sortBy parameter", e.getMessage());
     }
 
     @ExceptionHandler

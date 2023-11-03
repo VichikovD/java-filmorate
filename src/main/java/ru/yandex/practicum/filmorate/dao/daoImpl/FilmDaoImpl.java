@@ -181,16 +181,14 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getByDirectorId(Integer id, SortMode sortBy) {
-        String sortString;
+        String sortString = null;
         switch (sortBy) {
-            case YEAR:
+            case year:
                 sortString = "f.release_date ASC";
                 break;
-            case LIKES:
+            case likes:
                 sortString = "likes_quantity DESC";
                 break;
-            default:
-                sortString = "f.film_id ASC";
         }
 
         String sqlSelect = SELECT_FILMS +
