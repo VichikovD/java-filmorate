@@ -82,4 +82,13 @@ public class DirectorDaoImpl implements DirectorDao {
 
         return namedParameterJdbcTemplate.query(sqlSelect, new DirectorRowMapper());
     }
+
+    @Override
+    public List<Director> getByIdList(List<Integer> directorIdList) {
+        String sqlSelect = "SELECT director_id, director_name " +
+                "FROM directors " +
+                "WHERE director_id IN (:director_id_list)";
+        SqlParameterSource parameters = new MapSqlParameterSource("director_id_list", directorIdList);
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, new DirectorRowMapper());
+    }
 }

@@ -10,4 +10,6 @@ public interface GenreDao {
     Optional<Genre> getById(int genreId);
 
     List<Genre> getAll();
+
+    List<Genre> getByIdList(List<Integer> genreIdList);
 }
