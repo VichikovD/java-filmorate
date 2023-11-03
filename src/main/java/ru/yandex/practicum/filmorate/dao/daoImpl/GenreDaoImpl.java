@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -8,6 +9,9 @@ import org.springframework.jdbc.support.rowset.ResultSetWrappingSqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
+import ru.yandex.practicum.filmorate.dao.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.dao.mapper.GenreRowMapper;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.ValidateService;
 
@@ -31,7 +35,7 @@ public class GenreDaoImpl implements GenreDao {
                 "FROM genres " +
                 "ORDER BY genre_id";
 
-        return namedParameterJdbcTemplate.query(sql, (rs, rowNum) -> makeGenre(new ResultSetWrappingSqlRowSet(rs)));
+        return namedParameterJdbcTemplate.query(sql, new GenreRowMapper());
     }
 
     @Override
@@ -41,19 +45,13 @@ public class GenreDaoImpl implements GenreDao {
                 "WHERE genre_id = :genre_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("genre_id", genreId);
-        SqlRowSet rsGenre = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
-        if (rsGenre.next()) {
-            Genre genre = makeGenre(rsGenre);
-            return Optional.of(genre);
-        } else {
-            return Optional.empty();
-        }
-    }
 
-    public Genre makeGenre(SqlRowSet rs) {
-        return Genre.builder()
-                .id(rs.getInt("genre_id"))
-                .name(rs.getString("genre_name"))
-                .build();
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, (ResultSetExtractor<Optional<Genre>>) rs -> {
+            if (!rs.next()) {
+                return Optional.empty();
+            }
+            Genre genre = new GenreRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
+            return Optional.of(genre);
+        });
     }
 }

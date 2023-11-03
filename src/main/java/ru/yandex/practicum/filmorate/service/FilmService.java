@@ -52,9 +52,10 @@ public class FilmService {
         } else if (filmDirectors != null
                 && !new HashSet<>(directorDao.getAll()).containsAll(filmDirectors)) {
             throw new NotFoundException("Directors id not found. Please check available director id via GET /director ");
-        } else {
-            return filmDao.create(film);
         }
+
+        return filmDao.create(film);
+
     }
 
     public Film update(Film film) {
@@ -75,10 +76,11 @@ public class FilmService {
         } else if (filmDirectors != null
                 && !new HashSet<>(directorDao.getAll()).containsAll(filmDirectors)) {
             throw new NotFoundException("Directors id not found. Please check available director id via GET /director ");
-        } else {
-            filmDao.update(film);
-            return film;
         }
+
+        filmDao.update(film);
+        return film;
+
     }
 
     public Film getById(int filmId) {

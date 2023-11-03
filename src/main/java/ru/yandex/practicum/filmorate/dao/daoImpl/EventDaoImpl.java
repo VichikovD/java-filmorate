@@ -43,7 +43,6 @@ public class EventDaoImpl implements EventDao {
                 "WHERE user_id = :userId";
 
         SqlParameterSource parameters = new MapSqlParameterSource("userId", userId);
-
         return namedParameterJdbcTemplate.query(sqlSelect, parameters, new EventRowMapper());
     }
 }

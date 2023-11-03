@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -10,7 +11,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.ReviewDao;
+import ru.yandex.practicum.filmorate.dao.mapper.MpaRowMapper;
 import ru.yandex.practicum.filmorate.dao.mapper.ReviewRowMapper;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
@@ -65,14 +68,14 @@ public class ReviewDaoImpl implements ReviewDao {
                 "GROUP BY r.review_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("review_id", reviewId);
-        SqlRowSet rsReview = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
 
-        if (rsReview.next()) {
-            Review review = makeReview(rsReview);
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, (ResultSetExtractor<Optional<Review>>) rs -> {
+            if (!rs.next()) {
+                return Optional.empty();
+            }
+            Review review = new ReviewRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(review);
-        } else {
-            return Optional.empty();
-        }
+        });
     }
 
     //  Логика подсчета лайков(useful) -> количество(like) - количество(dislike)
@@ -164,17 +167,6 @@ public class ReviewDaoImpl implements ReviewDao {
 
         SqlParameterSource parameters = new MapSqlParameterSource("review_id", reviewId);
         namedParameterJdbcTemplate.update(sqlInsert, parameters);
-    }
-
-    private Review makeReview(SqlRowSet rs) {
-        return Review.builder()
-                .reviewId(rs.getInt("review_id"))
-                .content(rs.getString("content"))
-                .isPositive(rs.getBoolean("is_positive"))
-                .filmId(rs.getInt("film_id"))
-                .userId(rs.getInt("user_id"))
-                .useful(rs.getInt("useful"))
-                .build();
     }
 }
 
