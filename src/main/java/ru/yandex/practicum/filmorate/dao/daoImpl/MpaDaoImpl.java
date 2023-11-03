@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.dao.mapper.MpaRowMapper;
@@ -37,20 +37,14 @@ public class MpaDaoImpl implements MpaDao {
                 "WHERE mpa_id = :mpa_id";
 
         SqlParameterSource parameters = new MapSqlParameterSource("mpa_id", mpaId);
-        SqlRowSet rsMpa = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
-        if (rsMpa.next()) {
-            Mpa mpa = makeMpa(rsMpa);
-            return Optional.of(mpa);
-        } else {
-            return Optional.empty();
-        }
-    }
 
-    private Mpa makeMpa(SqlRowSet rs) {
-        return Mpa.builder()
-                .id(rs.getInt("mpa_id"))
-                .name(rs.getString("mpa_name"))
-                .build();
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, (ResultSetExtractor<Optional<Mpa>>) rs -> {
+            if (!rs.next()) {
+                return Optional.empty();
+            }
+            Mpa mpa = new MpaRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
+            return Optional.of(mpa);
+        });
     }
 }
 

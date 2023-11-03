@@ -2,13 +2,13 @@ package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
@@ -76,14 +76,14 @@ public class UserDaoImpl implements UserDao {
                 "FROM users " +
                 "WHERE user_id = :userId";
         SqlParameterSource parameters = new MapSqlParameterSource("userId", userId);
-        SqlRowSet rsUser = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
 
-        if (rsUser.next()) {
-            User user = makeUser(rsUser);
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, (ResultSetExtractor<Optional<User>>) rs -> {
+            if (!rs.next()) {
+                return Optional.empty();
+            }
+            User user = new UserRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(user);
-        } else {
-            return Optional.empty();
-        }
+        });
     }
 
     @Override
@@ -150,15 +150,5 @@ public class UserDaoImpl implements UserDao {
                 .addValue("other_user_id", otherUser.getId());
 
         return namedParameterJdbcTemplate.query(sqlSelect, parameters, new UserRowMapper());
-    }
-
-    private User makeUser(SqlRowSet rs) {
-        return User.builder()
-                .id(rs.getInt("user_id"))
-                .name(rs.getString("user_name"))
-                .login(rs.getString("login"))
-                .birthday(rs.getDate("birthday").toLocalDate())
-                .email(rs.getString("email"))
-                .build();
     }
 }

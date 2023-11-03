@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.DirectorDao;
 import ru.yandex.practicum.filmorate.dao.mapper.DirectorRowMapper;
@@ -56,13 +56,13 @@ public class DirectorDaoImpl implements DirectorDao {
                 "WHERE director_id = :director_id";
         SqlParameterSource parameters = new MapSqlParameterSource("director_id", id);
 
-        SqlRowSet rsDirector = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
-        if (rsDirector.next()) {
-            Director director = makeDirector(rsDirector);
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, (ResultSetExtractor<Optional<Director>>) rs -> {
+            if (!rs.next()) {
+                return Optional.empty();
+            }
+            Director director = new DirectorRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(director);
-        } else {
-            return Optional.empty();
-        }
+        });
     }
 
     @Override
@@ -81,9 +81,5 @@ public class DirectorDaoImpl implements DirectorDao {
                 "ORDER BY director_id";
 
         return namedParameterJdbcTemplate.query(sqlSelect, new DirectorRowMapper());
-    }
-
-    private Director makeDirector(SqlRowSet rs) {
-        return new Director(rs.getInt("director_id"), rs.getString("director_name"));
     }
 }

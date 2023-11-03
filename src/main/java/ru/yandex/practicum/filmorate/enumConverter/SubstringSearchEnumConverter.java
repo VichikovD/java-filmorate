@@ -22,8 +22,9 @@ public class SubstringSearchEnumConverter implements Converter<String, Substring
                 (Objects.equals(filter[0], "TITLE") && Objects.equals(filter[1], "DIRECTOR"))
                         || (Objects.equals(filter[0], "DIRECTOR") && Objects.equals(filter[1], "TITLE")))) {
             return SubstringSearch.DIRECTOR_TITLE;
-        } else {
-            throw new ValidateException("Invalid filter: " + source + ". Filter may have the following values: director, title");
         }
+
+        throw new ValidateException("Invalid filter: " + source + ". Filter may have the following values: director, title");
+
     }
 }

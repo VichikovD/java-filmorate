@@ -2,13 +2,13 @@ package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.mapper.DirectorRowMapper;
@@ -85,16 +85,16 @@ public class FilmDaoImpl implements FilmDao {
                 "WHERE f.film_id = :film_id " +
                 "GROUP BY f.film_id";
         SqlParameterSource parameters = new MapSqlParameterSource("film_id", filmId);
-        SqlRowSet rsFilm = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
 
-        if (rsFilm.next()) {
-            Film film = makeFilm(rsFilm);
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, (ResultSetExtractor<Optional<Film>>) rs -> {
+            if (!rs.next()) {
+                return Optional.empty();
+            }
+            Film film = new FilmRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             film.setGenres(getGenreByFilmId(filmId));
             film.setDirectors(getDirectorsByFilmId(filmId));
             return Optional.of(film);
-        } else {
-            return Optional.empty();
-        }
+        });
     }
 
     @Override
@@ -300,6 +300,7 @@ public class FilmDaoImpl implements FilmDao {
                 "LEFT OUTER JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "WHERE fg.film_id IN (:ids)";
         SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
+
         namedParameterJdbcTemplate.query(sqlSelect, parameters, (rs, rowNum) -> {
             Film film = filmMap.get(rs.getInt("film_id"));
             Set<Genre> genres = film.getGenres();
@@ -422,18 +423,6 @@ public class FilmDaoImpl implements FilmDao {
         SqlParameterSource parameters = new MapSqlParameterSource("film_id", filmId);
 
         namedParameterJdbcTemplate.update(sqlDelete, parameters);
-    }
-
-    private Film makeFilm(SqlRowSet rs) {
-        return Film.builder()
-                .id(rs.getInt("film_id"))
-                .name(rs.getString("film_name"))
-                .description(rs.getString("description"))
-                .releaseDate(rs.getDate("release_date").toLocalDate())
-                .duration(rs.getInt("duration"))
-                .mpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")))
-                .likesQuantity(rs.getInt("likes_quantity"))
-                .build();
     }
 }
 
