@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.dao.mapper.GenreRowMapper;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;

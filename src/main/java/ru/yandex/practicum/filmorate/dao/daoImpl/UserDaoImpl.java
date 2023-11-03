@@ -9,13 +9,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
-import ru.yandex.practicum.filmorate.dao.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dao.mapper.UserRowMapper;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -85,7 +82,7 @@ public class UserDaoImpl implements UserDao {
                 return Optional.empty();
             }
             User user = new UserRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
-           return Optional.of(user);
+            return Optional.of(user);
         });
     }
 
