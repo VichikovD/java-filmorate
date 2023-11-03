@@ -8,10 +8,6 @@ import ru.yandex.practicum.filmorate.model.SortMode;
 public class SortModeEnumConverter implements Converter<String, SortMode> {
     @Override
     public SortMode convert(String s) {
-        try {
-            return SortMode.valueOf(s.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return SortMode.FILM_ID;
-        }
+        return SortMode.valueOf(s);
     }
 }
