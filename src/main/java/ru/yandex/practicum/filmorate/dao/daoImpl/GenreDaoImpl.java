@@ -50,4 +50,13 @@ public class GenreDaoImpl implements GenreDao {
             return Optional.of(genre);
         });
     }
+
+    @Override
+    public List<Genre> getByIdList(List<Integer> genreIdList) {
+        String sqlSelect = "SELECT genre_id, genre_name " +
+                "FROM genres " +
+                "WHERE genre_id IN (:genre_id_list)";
+        SqlParameterSource parameters = new MapSqlParameterSource("genre_id_list", genreIdList);
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, new GenreRowMapper());
+    }
 }

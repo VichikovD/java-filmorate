@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
@@ -46,16 +47,21 @@ public class FilmService {
         Set<Genre> filmGenres = film.getGenres();
         Set<Director> filmDirectors = film.getDirectors();
 
-        if (filmGenres != null
-                && !new HashSet<>(genreDao.getAll()).containsAll(filmGenres)) {
+        // Обертка в HashSet тут и в методе update() используется только для снижения time complexity.
+        // List.containsAll выполняется за О(n*m), а перекладывание в HashSet и его проверка - за О(n) + O(m)
+        if (!new HashSet<>(genreDao.getByIdList(filmGenres.stream()
+                .map(Genre::getId)
+                .collect(Collectors.toList())))
+                .containsAll(filmGenres)) {
             throw new NotFoundException("Genres id not found. Please check available genre id via GET /genre ");
-        } else if (filmDirectors != null
-                && !new HashSet<>(directorDao.getAll()).containsAll(filmDirectors)) {
+        } else if (!new HashSet<>(directorDao.getByIdList(filmDirectors.stream()
+                .map(Director::getId)
+                .collect(Collectors.toList())))
+                .containsAll(filmDirectors)) {
             throw new NotFoundException("Directors id not found. Please check available director id via GET /director ");
         }
 
         return filmDao.create(film);
-
     }
 
     public Film update(Film film) {
@@ -70,17 +76,20 @@ public class FilmService {
         mpaDao.getById(mpaId)
                 .orElseThrow(() -> new NotFoundException("Mpa not found by id: " + mpaId));
 
-        if (filmGenres != null
-                && !new HashSet<>(genreDao.getAll()).containsAll(filmGenres)) {
+        if (!new HashSet<>(genreDao.getByIdList(filmGenres.stream()
+                .map(Genre::getId)
+                .collect(Collectors.toList())))
+                .containsAll(filmGenres)) {
             throw new NotFoundException("Genres id not found. Please check available genre id via GET /genre ");
-        } else if (filmDirectors != null
-                && !new HashSet<>(directorDao.getAll()).containsAll(filmDirectors)) {
+        } else if (!new HashSet<>(directorDao.getByIdList(filmDirectors.stream()
+                .map(Director::getId)
+                .collect(Collectors.toList())))
+                .containsAll(filmDirectors)) {
             throw new NotFoundException("Directors id not found. Please check available director id via GET /director ");
         }
 
         filmDao.update(film);
         return film;
-
     }
 
     public Film getById(int filmId) {

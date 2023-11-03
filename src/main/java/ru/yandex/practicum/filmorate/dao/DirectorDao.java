@@ -16,4 +16,6 @@ public interface DirectorDao {
     void deleteById(Integer id);
 
     List<Director> getAll();
+
+    List<Director> getByIdList(List<Integer> directorIdList);
 }
