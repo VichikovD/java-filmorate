@@ -48,7 +48,11 @@ public class FilmService {
         Set<Director> filmDirectors = film.getDirectors();
 
         // Обертка в HashSet тут и в методе update() используется только для снижения time complexity.
-        // List.containsAll выполняется за О(n*m), а перекладывание в HashSet и его проверка - за О(n) + O(m)
+        // List.containsAll выполняется за O(N * M), а перекладывание в HashSet и его проверка - за О(N) + O(N)
+        // т.е. 1 genre/director => List.containsAll = 1; HashSet.containsAll = 2  - Медленнее в 2 раза
+        // 2 genre/director => List.containsAll = 4; HashSet.containsAll = 4 - Одинаковая скорость
+        // 3 genre/director => List.containsAll = 9; HashSet.containsAll = 6 - в 1.5 быстрее
+        // 4 genre/director => List.containsAll = 16; HashSet.containsAll = 8 - в 2 быстрее и т.д.
         if (!new HashSet<>(genreDao.getByIdList(filmGenres.stream()
                 .map(Genre::getId)
                 .collect(Collectors.toList())))
