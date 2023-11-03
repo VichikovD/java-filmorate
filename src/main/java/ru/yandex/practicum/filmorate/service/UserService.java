@@ -3,34 +3,44 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.EventDao;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
 public class UserService {
     UserDao userDao;
+    FilmDao filmDao;
     ValidateService validateService;
+    EventDao eventDao;
 
     @Autowired
     public UserService(@Qualifier("userDaoImpl") UserDao userDao,
+                       @Qualifier("eventDaoImpl") EventDao eventDao,
+                       FilmDao filmDao,
                        ValidateService validateService) {
+        this.filmDao = filmDao;
         this.userDao = userDao;
         this.validateService = validateService;
+        this.eventDao = eventDao;
     }
 
-    public User createUser(User user) {
+    public User create(User user) {
         if (user.isEmptyName()) {
             user.setLoginAsName();
         }
         return userDao.create(user);
     }
 
-    public User updateUser(User user) {
+    public User update(User user) {
         validateService.validateUserId(user);
         int userId = user.getId();
+
         userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
         if (user.isEmptyName()) {
@@ -40,12 +50,16 @@ public class UserService {
         return user;
     }
 
-    public User getUserById(int userId) {
+    public User getById(int userId) {
         return userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
     }
 
-    public List<User> getAllUsers() {
+    public void deleteById(Integer id) {
+        userDao.deleteById(id);
+    }
+
+    public List<User> getAll() {
         return userDao.getAll();
     }
 
@@ -56,6 +70,15 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
 
         userDao.addFriend(user, friend);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.FRIEND)
+                .operation(EventOperation.ADD)
+                .entityId(friendId)
+                .build();
+        eventDao.create(event);
     }
 
     public void deleteFriend(int userId, int friendId) {
@@ -65,20 +88,39 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + friendId));
 
         userDao.deleteFriend(user, friend);
+
+        Event event = Event.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .userId(userId)
+                .eventType(EventType.FRIEND)
+                .operation(EventOperation.REMOVE)
+                .entityId(friendId)
+                .build();
+        eventDao.create(event);
     }
 
-    public List<User> getFriendsByUserId(int userId) {
+    public List<User> getFriendsById(int userId) {
         userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
-        return userDao.getFriendsListById(userId);
+        return userDao.getFriendsById(userId);
     }
 
-    public List<User> getUserCommonFriends(int userId, int otherUserId) {
+    public List<User> getCommonFriends(int userId, int otherUserId) {
         User user = userDao.getById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
         User otherUser = userDao.getById(otherUserId)
                 .orElseThrow(() -> new NotFoundException("User not found by id: " + otherUserId));
 
-        return userDao.getUserCommonFriends(user, otherUser);
+        return userDao.getCommonFriends(user, otherUser);
+    }
+
+    public List<Event> getEventsById(Integer userId) {
+        userDao.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found by id: " + userId));
+        return eventDao.getByUserId(userId);
+    }
+
+    public List<Film> getRecommendationsById(int userId) {
+        return filmDao.getRecommendationsById(userId);
     }
 }

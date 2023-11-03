@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -21,33 +23,39 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody @Valid User user) {
+    public User create(@RequestBody @Valid User user) {
         log.info("POST {}, body={}", "\"/users\"", user);
-        User userToReturn = userService.createUser(user);
+        User userToReturn = userService.create(user);
         log.debug(userToReturn.toString());
         return userToReturn;
     }
 
     @PutMapping
-    public User updateUser(@RequestBody @Valid User user) {
+    public User update(@RequestBody @Valid User user) {
         log.info("PUT {}, body={}", "\"/users\"", user);
-        User userToReturn = userService.updateUser(user);
+        User userToReturn = userService.update(user);
         log.debug(userToReturn.toString());
         return userToReturn;
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable int id) {
+    public User getById(@PathVariable int id) {
         log.info("GET {}", "\"/users/" + id + "\"");
-        User userToReturn = userService.getUserById(id);
+        User userToReturn = userService.getById(id);
         log.debug(userToReturn.toString());
         return userToReturn;
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable("id") Integer id) {
+        log.info("DELETE \"/users/" + id + "\"");
+        userService.deleteById(id);
+    }
+
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<User> getAll() {
         log.info("GET {}", "\"/users\"");
-        List<User> usersList = userService.getAllUsers();
+        List<User> usersList = userService.getAll();
         log.debug(usersList.toString());
         return usersList;
     }
@@ -67,19 +75,35 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getUserFriends(@PathVariable int id) {
+    public List<User> getFriendsById(@PathVariable int id) {
         log.info("GET {}", "\"/users/" + id + "/friends/\"");
-        List<User> usersList = userService.getFriendsByUserId(id);
+        List<User> usersList = userService.getFriendsById(id);
         log.debug(usersList.toString());
         return usersList;
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getUserCommonFriends(@PathVariable int id,
-                                           @PathVariable int otherId) {
+    public List<User> getCommonFriends(@PathVariable int id,
+                                       @PathVariable int otherId) {
         log.info("GET {}", "\"/users/" + id + "/friends/common/" + otherId + "\"");
-        List<User> usersList = userService.getUserCommonFriends(id, otherId);
+        List<User> usersList = userService.getCommonFriends(id, otherId);
         log.debug(usersList.toString());
         return usersList;
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getFeed(@PathVariable int id) {
+        log.info("GET {}", "\"/users/" + id + "/feed/\"");
+        List<Event> eventsList = userService.getEventsById(id);
+        log.debug(eventsList.toString());
+        return eventsList;
+    }
+
+    @GetMapping("/{userId}/recommendations")
+    public List<Film> getRecommendationsById(@PathVariable int userId) {
+        log.info("GET {}", "\"/users/" + userId + "/recommendations/\"");
+        List<Film> recommendedFilms = userService.getRecommendationsById(userId);
+        log.debug(recommendedFilms.toString());
+        return recommendedFilms;
     }
 }

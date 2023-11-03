@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.dao.GenreDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.Set;
+import java.util.List;
 
 @Service
 public class GenreService {
@@ -17,11 +17,12 @@ public class GenreService {
         this.genreDao = genreDao;
     }
 
-    public Set<Genre> getAllGenres() {
+
+    public List<Genre> getAll() {
         return genreDao.getAll();
     }
 
-    public Genre getGenreByGenreId(int genreId) {
+    public Genre getById(int genreId) {
         return genreDao.getById(genreId)
                 .orElseThrow(() -> new NotFoundException("Genre not found by id: " + genreId));
     }

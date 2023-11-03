@@ -1,18 +1,17 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.dao.mapper.MpaRowMapper;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Component
 public class MpaDaoImpl implements MpaDao {
@@ -23,12 +22,12 @@ public class MpaDaoImpl implements MpaDao {
     }
 
     @Override
-    public Set<Mpa> getAll() {
-        // почему-то в итоге не возвращает сортированный через "ORDER BY genre_id DESC"
+    public List<Mpa> getAll() {
         String sqlSelect = "SELECT mpa_id, mpa_name " +
-                "FROM mpas";
+                "FROM mpas " +
+                "ORDER BY mpa_id";
 
-        return new HashSet<Mpa>(namedParameterJdbcTemplate.query(sqlSelect, new MpaRowMapper()));
+        return namedParameterJdbcTemplate.query(sqlSelect, new MpaRowMapper());
     }
 
     @Override
@@ -39,18 +38,13 @@ public class MpaDaoImpl implements MpaDao {
 
         SqlParameterSource parameters = new MapSqlParameterSource("mpa_id", mpaId);
 
-        SqlRowSet rsMpa = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
-
-        if (rsMpa.next()) {
-            Mpa mpa = makeMpa(rsMpa);
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, (ResultSetExtractor<Optional<Mpa>>) rs -> {
+            if (!rs.next()) {
+                return Optional.empty();
+            }
+            Mpa mpa = new MpaRowMapper().mapRow(rs, rs.getRow());  // rs.getRow() в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(mpa);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    private Mpa makeMpa(SqlRowSet rs) {
-        return new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name"));
+        });
     }
 }
 

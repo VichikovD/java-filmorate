@@ -1,14 +1,16 @@
 package ru.yandex.practicum.filmorate.dao.daoImpl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.dao.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
@@ -21,8 +23,12 @@ import java.util.Optional;
 public class UserDaoImpl implements UserDao {
     NamedParameterJdbcOperations namedParameterJdbcTemplate;
 
-    public UserDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    FilmDao filmDao;
+
+    public UserDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+                       @Qualifier("filmDaoImpl") FilmDao filmDao) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.filmDao = filmDao;
     }
 
     @Override
@@ -70,15 +76,26 @@ public class UserDaoImpl implements UserDao {
                 "FROM users " +
                 "WHERE user_id = :userId";
         SqlParameterSource parameters = new MapSqlParameterSource("userId", userId);
-        SqlRowSet rsUser = namedParameterJdbcTemplate.queryForRowSet(sqlSelect, parameters);
 
-        if (rsUser.next()) {
-            User user = makeUser(rsUser);
+        return namedParameterJdbcTemplate.query(sqlSelect, parameters, (ResultSetExtractor<Optional<User>>) rs -> {
+            if (!rs.next()) {
+                return Optional.empty();
+            }
+            User user = new UserRowMapper().mapRow(rs, rs.getRow());  // rs.getRow() в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(user);
-        } else {
-            return Optional.empty();
-        }
+        });
     }
+
+    @Override
+    public void deleteById(Integer id) {
+        String sqlDelete = "DELETE FROM users " +
+                "WHERE user_id = :user_id ";
+
+        SqlParameterSource parameters = new MapSqlParameterSource("user_id", id);
+
+        namedParameterJdbcTemplate.update(sqlDelete, parameters);
+    }
+
 
     @Override
     public void addFriend(User user, User friend) {
@@ -108,10 +125,10 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public List<User> getFriendsListById(int userId) {
+    public List<User> getFriendsById(int userId) {
         String sqlSelect = "SELECT u.user_id, u.email, u.login, u.user_name, u.birthday " +
                 "FROM friends AS f " +
-                "LEFT OUTER JOIN users AS u ON f.friend_id = u.user_id " +
+                "INNER JOIN users AS u ON f.friend_id = u.user_id " +
                 "WHERE f.user_id = :userId";
 
         SqlParameterSource parameters = new MapSqlParameterSource("userId", userId);
@@ -120,7 +137,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public List<User> getUserCommonFriends(User user, User otherUser) {
+    public List<User> getCommonFriends(User user, User otherUser) {
         String sqlSelect = "SELECT u.user_id, u.email, u.login, u.user_name, u.birthday " +
                 "FROM friends AS f " +
                 "INNER JOIN users AS u ON f.friend_id = u.user_id " +
@@ -133,15 +150,5 @@ public class UserDaoImpl implements UserDao {
                 .addValue("other_user_id", otherUser.getId());
 
         return namedParameterJdbcTemplate.query(sqlSelect, parameters, new UserRowMapper());
-    }
-
-    private User makeUser(SqlRowSet rs) {
-        return User.builder()
-                .id(rs.getInt("user_id"))
-                .name(rs.getString("user_name"))
-                .login(rs.getString("login"))
-                .birthday(rs.getDate("birthday").toLocalDate())
-                .email(rs.getString("email"))
-                .build();
     }
 }

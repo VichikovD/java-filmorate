@@ -9,6 +9,7 @@ import java.util.Objects;
 @Setter
 @Getter
 @ToString
+@Builder
 public class Genre implements Comparable<Genre> {
     Integer id;
     String name;

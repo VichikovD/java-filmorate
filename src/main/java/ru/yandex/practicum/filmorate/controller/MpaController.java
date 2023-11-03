@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
 import javax.validation.constraints.Min;
-import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -24,14 +24,14 @@ public class MpaController {
     }
 
     @GetMapping
-    public Set<Mpa> getAllMpa() {
-        return mpaService.getAllMpa();
+    public List<Mpa> getAll() {
+        return mpaService.getAll();
     }
 
     @GetMapping("/{id}")
-    public Mpa getMpaByMpaId(@PathVariable @Min(value = 1) int id) {
+    public Mpa getById(@PathVariable @Min(value = 1) int id) {
         log.info("GET \"/genres/" + id + "\"");
-        Mpa mpa = mpaService.getMpaByMpaId(id);
+        Mpa mpa = mpaService.getById(id);
         log.debug(mpa.toString());
         return mpa;
     }

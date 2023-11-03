@@ -2,19 +2,21 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
 @Setter
+@Getter
 @ToString
 @Builder
-public class Mpa {
+public class Director implements Comparable<Director> {
     Integer id;
+    @NotBlank(message = "Director name can't be null or empty")
     String name;
 
-    public Mpa(Integer id) {
+    public Director(Integer id) {
         this.id = id;
     }
 
@@ -22,12 +24,17 @@ public class Mpa {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Mpa mpa = (Mpa) o;
-        return Objects.equals(id, mpa.id);
+        Director director = (Director) o;
+        return Objects.equals(id, director.id);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(Director d) {
+        return this.id.compareTo(d.getId());
     }
 }

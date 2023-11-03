@@ -9,10 +9,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,8 +24,8 @@ public class MpaDaoTest {
 
     @Test
     public void testGetAll() {
-        Set<Mpa> mpasActual = mpaDao.getAll();
-        Set<Mpa> mpasExpected = new HashSet<>(data.getMpaList());
+        List<Mpa> mpasActual = mpaDao.getAll();
+        List<Mpa> mpasExpected = new ArrayList<>(data.getMpaList());
 
         assertEquals(mpasExpected, mpasActual);
     }
