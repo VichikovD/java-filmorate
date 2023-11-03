@@ -81,7 +81,7 @@ public class UserDaoImpl implements UserDao {
             if (!rs.next()) {
                 return Optional.empty();
             }
-            User user = new UserRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
+            User user = new UserRowMapper().mapRow(rs, rs.getRow());  // rs.getRow() в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(user);
         });
     }

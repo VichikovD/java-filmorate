@@ -70,7 +70,7 @@ public class ReviewDaoImpl implements ReviewDao {
             if (!rs.next()) {
                 return Optional.empty();
             }
-            Review review = new ReviewRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
+            Review review = new ReviewRowMapper().mapRow(rs, rs.getRow());  // rs.getRow() в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(review);
         });
     }

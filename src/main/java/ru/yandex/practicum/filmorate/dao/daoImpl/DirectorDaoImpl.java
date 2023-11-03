@@ -60,7 +60,7 @@ public class DirectorDaoImpl implements DirectorDao {
             if (!rs.next()) {
                 return Optional.empty();
             }
-            Director director = new DirectorRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
+            Director director = new DirectorRowMapper().mapRow(rs, rs.getRow());  // rs.getRow() в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(director);
         });
     }

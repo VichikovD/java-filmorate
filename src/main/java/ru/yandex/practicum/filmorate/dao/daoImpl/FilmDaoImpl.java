@@ -90,7 +90,7 @@ public class FilmDaoImpl implements FilmDao {
             if (!rs.next()) {
                 return Optional.empty();
             }
-            Film film = new FilmRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
+            Film film = new FilmRowMapper().mapRow(rs, rs.getRow());  // rs.getRow() в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             film.setGenres(getGenreByFilmId(filmId));
             film.setDirectors(getDirectorsByFilmId(filmId));
             return Optional.of(film);

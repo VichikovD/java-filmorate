@@ -42,7 +42,7 @@ public class MpaDaoImpl implements MpaDao {
             if (!rs.next()) {
                 return Optional.empty();
             }
-            Mpa mpa = new MpaRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
+            Mpa mpa = new MpaRowMapper().mapRow(rs, rs.getRow());  // rs.getRow() в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(mpa);
         });
     }

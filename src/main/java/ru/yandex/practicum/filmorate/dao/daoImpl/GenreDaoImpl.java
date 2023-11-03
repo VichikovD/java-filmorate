@@ -46,7 +46,7 @@ public class GenreDaoImpl implements GenreDao {
             if (!rs.next()) {
                 return Optional.empty();
             }
-            Genre genre = new GenreRowMapper().mapRow(rs, 1);  // 1 в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
+            Genre genre = new GenreRowMapper().mapRow(rs, rs.getRow());  // rs.getRow() в mapRow бесполезна, в самом методе она даже не используется, но есть в сигнатуре
             return Optional.of(genre);
         });
     }
