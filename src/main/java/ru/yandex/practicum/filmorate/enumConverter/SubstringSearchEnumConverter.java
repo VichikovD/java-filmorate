@@ -2,12 +2,10 @@ package ru.yandex.practicum.filmorate.enumConverter;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.SubstringSearch;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 public class SubstringSearchEnumConverter implements Converter<String, List<SubstringSearch>> {

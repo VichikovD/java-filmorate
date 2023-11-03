@@ -22,8 +22,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ru.yandex.practicum.filmorate.model.SubstringSearch.director;
-
 @Slf4j
 @Component
 public class FilmDaoImpl implements FilmDao {
@@ -150,7 +148,7 @@ public class FilmDaoImpl implements FilmDao {
         filterMap.put("title", "NULL");
         filterMap.put("director", "NULL");
 
-        for(SubstringSearch filter : filters) {
+        for (SubstringSearch filter : filters) {
             switch (filter) {
                 case director:
                     filterMap.put("director", "%" + correctedQuery + "%");
