@@ -21,7 +21,7 @@ public interface FilmDao {
 
     List<Film> getAllMostPopular(Integer count, Integer genreId, Integer year);
 
-    List<Film> getViaSubstringSearch(String query, SubstringSearch filter);
+    List<Film> getViaSubstringSearch(String query, List<SubstringSearch> filter);
 
     List<Film> getByDirectorId(Integer directorId, SortMode sortParam);
 

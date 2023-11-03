@@ -22,6 +22,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static ru.yandex.practicum.filmorate.model.SubstringSearch.director;
+
 @Slf4j
 @Component
 public class FilmDaoImpl implements FilmDao {
@@ -141,24 +143,22 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> getViaSubstringSearch(String query, SubstringSearch filter) {
+    public List<Film> getViaSubstringSearch(String query, List<SubstringSearch> filters) {
         String correctedQuery = query.toLowerCase()
                 .replaceAll(";", "");
         HashMap<String, String> filterMap = new HashMap<>();
+        filterMap.put("title", "NULL");
+        filterMap.put("director", "NULL");
 
-        switch (filter) {
-            case DIRECTOR:
-                filterMap.put("director", "%" + correctedQuery + "%");
-                filterMap.put("title", "NULL");
-                break;
-            case TITLE:
-                filterMap.put("director", "NULL");
-                filterMap.put("title", "%" + correctedQuery + "%");
-                break;
-            case DIRECTOR_TITLE:
-                filterMap.put("director", "%" + correctedQuery + "%");
-                filterMap.put("title", "%" + correctedQuery + "%");
-                break;
+        for(SubstringSearch filter : filters) {
+            switch (filter) {
+                case director:
+                    filterMap.put("director", "%" + correctedQuery + "%");
+                    break;
+                case title:
+                    filterMap.put("title", "%" + correctedQuery + "%");
+                    break;
+            }
         }
 
         String sqlSelect = SELECT_FILMS +

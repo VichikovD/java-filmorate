@@ -76,7 +76,7 @@ public class FilmController {
 
     @GetMapping("/search")
     public List<Film> getViaSubstringSearch(@RequestParam @NotBlank String query,
-                                            @RequestParam(name = "by") SubstringSearch filter) {
+                                            @RequestParam(name = "by") List<SubstringSearch> filter) {
         log.info("GET {}, query parameters={}", "\"/films/search\"", "{query=" + query + ", by=" + filter + "}");
         List<Film> films = filmService.getViaSubstringSearch(query, filter);
         log.debug(films.toString());
