@@ -109,7 +109,7 @@ public class FilmService {
         return filmDao.getAllMostPopular(count, genreId, year);
     }
 
-    public List<Film> getViaSubstringSearch(String query, SubstringSearch filter) {
+    public List<Film> getViaSubstringSearch(String query, List<SubstringSearch> filter) {
         return filmDao.getViaSubstringSearch(query, filter);
     }
 

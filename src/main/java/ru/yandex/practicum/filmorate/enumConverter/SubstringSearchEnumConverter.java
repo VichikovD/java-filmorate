@@ -5,26 +5,37 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidateException;
 import ru.yandex.practicum.filmorate.model.SubstringSearch;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Component
-public class SubstringSearchEnumConverter implements Converter<String, SubstringSearch> {
+public class SubstringSearchEnumConverter implements Converter<String, List<SubstringSearch>> {
     @Override
-    public SubstringSearch convert(String source) {
-        String[] filter = source.toUpperCase()
-                .replaceAll(" ", "")
+    public List<SubstringSearch> convert(String source) {
+        List<SubstringSearch> filterList = new ArrayList<>();
+        String[] filter = source.toLowerCase()
                 .split(",");
-        if (filter.length == 1 && Objects.equals(filter[0], "DIRECTOR")) {
-            return SubstringSearch.DIRECTOR;
-        } else if (filter.length == 1 && Objects.equals(filter[0], "TITLE")) {
-            return SubstringSearch.TITLE;
+        for (String toConvert : filter) {
+            filterList.add(SubstringSearch.valueOf(toConvert));
+        }
+        return filterList;
+
+        /*if (filter.length == 1 && Objects.equals(filter[0], "director")) {
+            filterList.add(SubstringSearch.director);
+            return filterList;
+        } else if (filter.length == 1 && Objects.equals(filter[0], "title")) {
+            filterList.add(SubstringSearch.title);
+            return filterList;
         } else if (filter.length == 2 && (
-                (Objects.equals(filter[0], "TITLE") && Objects.equals(filter[1], "DIRECTOR"))
-                        || (Objects.equals(filter[0], "DIRECTOR") && Objects.equals(filter[1], "TITLE")))) {
-            return SubstringSearch.DIRECTOR_TITLE;
+                (Objects.equals(filter[0], "title") && Objects.equals(filter[1], "director"))
+                        || (Objects.equals(filter[0], "director") && Objects.equals(filter[1], "title")))) {
+            filterList.add(SubstringSearch.title);
+            filterList.add(SubstringSearch.director);
+            return filterList;
         }
 
-        throw new ValidateException("Invalid filter: " + source + ". Filter may have the following values: director, title");
+        throw new ValidateException("Invalid filter: " + source + ". Filter may have the following values: director, title");*/
 
     }
 }

@@ -128,7 +128,7 @@ public class UserDaoImpl implements UserDao {
     public List<User> getFriendsById(int userId) {
         String sqlSelect = "SELECT u.user_id, u.email, u.login, u.user_name, u.birthday " +
                 "FROM friends AS f " +
-                "LEFT OUTER JOIN users AS u ON f.friend_id = u.user_id " +
+                "INNER JOIN users AS u ON f.friend_id = u.user_id " +
                 "WHERE f.user_id = :userId";
 
         SqlParameterSource parameters = new MapSqlParameterSource("userId", userId);
